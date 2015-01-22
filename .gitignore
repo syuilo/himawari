@@ -1,0 +1,17 @@
+/config/
+
+# npm
+npm-debug.log
+/node_modules/
+
+# TypeScript definition file
+/typings/
+
+# bin
+*.js
+*.map
+
+# Other
+package.json
+twitter.ts
+*.txt
