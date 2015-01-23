@@ -6,7 +6,7 @@ export = AnswerMarkovTable;
 
 class AnswerMarkovTable
 {
-	public talkId: string;
+	public talkId: number;
 	public one: string;
 	public two: string;
 	public three: string;
@@ -19,7 +19,7 @@ class AnswerMarkovTable
 		this.three = statusMarkovTable.three;
 	}
 
-	public static create(talkId: string, one: string, two: string, three: string, callback: () => void): void {
+	public static create(talkId: number, one: string, two: string, three: string, callback: () => void): void {
 		db.query('insert into answerMarkovTables (talkId, one, two, three) values (?, ?, ?, ?)',
 			[talkId, one, two, three],
 			(err: any, info: any) => {
@@ -35,7 +35,7 @@ class AnswerMarkovTable
 			(err: any, markovTables: any[]) => callback(markovTables.length != 0 ? markovTables.map((markovTable) => new AnswerMarkovTable(markovTable)) : null));
 	}
 
-	public static searchAnswer(talkId: string, callback: (markovTable: AnswerMarkovTable) => void): void
+	public static searchAnswer(talkId: number, callback: (markovTable: AnswerMarkovTable) => void): void
 	{
 		db.query("select * from answerMarkovTables where talkId = ? and one = '<begin>'",
 			[talkId],

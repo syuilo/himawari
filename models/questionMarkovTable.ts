@@ -6,7 +6,7 @@ export = QuestionMarkovTable;
 
 class QuestionMarkovTable
 {
-	public talkId: string;
+	public talkId: number;
 	public one: string;
 	public two: string;
 	public three: string;
@@ -19,7 +19,7 @@ class QuestionMarkovTable
 		this.three = statusMarkovTable.three;
 	}
 
-	public static create(talkId: string, one: string, two: string, three: string, callback: () => void): void {
+	public static create(talkId: number, one: string, two: string, three: string, callback: () => void): void {
 		db.query('insert into questionMarkovTables (talkId, one, two, three) values (?, ?, ?, ?)',
 			[talkId, one, two, three],
 			(err: any, info: any) => {

@@ -6,15 +6,12 @@
  */
 
 var MeCab = require('mecab-async');
-import crypto = require('crypto');
 import async = require('async');
 
 import StatusMarkovTable = require('./models/statusMarkovTable');
-import ReplyMarkovTable = require('./models/replyMarkovTable');
 import QuestionMarkovTable = require('./models/questionMarkovTable');
 import AnswerMarkovTable = require('./models/answerMarkovTable');
-import Question = require('./models/question');
-import Answer = require('./models/answer');
+import Talk = require('./models/talk');
 
 var trim = (text: string) =>
 {
@@ -119,9 +116,9 @@ class Himawari
 						AnswerMarkovTable.searchAnswer(q.talkId, (a: AnswerMarkovTable) =>
 						{
 							// Aを復元
-							Answer.find(a.talkId, (answer: Answer) =>
+							Talk.find(a.talkId, (talk: Talk) =>
 							{
-								callback(trim(this.textFilter(answer.text)));
+								callback(trim(this.textFilter(talk.answer)));
 							});
 						});
 					}
@@ -246,38 +243,31 @@ class Himawari
 	{
 		if (q == null || a == null) return;
 
-		// 会話のIDを生成
-		var sha1 = crypto.createHash('sha1');
-		sha1.update(q + a);
-		var talkId = sha1.digest('hex');
-
-		// Qの保存
-		Question.create(talkId, q, () => { });
-
-		// Aの保存
-		Answer.create(talkId, a, () => { });
-
-		// Qの各要素の保存
-		Himawari.morphologicalAnalyze(q, (result: string[][]) =>
+		// 会話の保存
+		Talk.create(q, a, (insertId: number) =>
 		{
-			Himawari.getTable([this.markovBeginDelimiter], [this.markovEndDelimiter], 3, result.map(x => x[0])).forEach((table: string[]) =>
+			// Qの各要素の保存
+			Himawari.morphologicalAnalyze(q, (result: string[][]) =>
 			{
-				if (table[0] != this.markovEndDelimiter && table[1] != this.markovEndDelimiter)
+				Himawari.getTable([this.markovBeginDelimiter], [this.markovEndDelimiter], 3, result.map(x => x[0])).forEach((table: string[]) =>
 				{
-					QuestionMarkovTable.create(talkId, table[0], table[1], table[2], () => { });
-				}
+					if (table[0] != this.markovEndDelimiter && table[1] != this.markovEndDelimiter)
+					{
+						QuestionMarkovTable.create(insertId, table[0], table[1], table[2], () => { });
+					}
+				});
 			});
-		});
 
-		// Aの各要素の保存
-		Himawari.morphologicalAnalyze(a, (result: string[][]) =>
-		{
-			Himawari.getTable([this.markovBeginDelimiter], [this.markovEndDelimiter], 3, result.map(x => x[0])).forEach((table: string[]) =>
+			// Aの各要素の保存
+			Himawari.morphologicalAnalyze(a, (result: string[][]) =>
 			{
-				if (table[0] != this.markovEndDelimiter && table[1] != this.markovEndDelimiter)
+				Himawari.getTable([this.markovBeginDelimiter], [this.markovEndDelimiter], 3, result.map(x => x[0])).forEach((table: string[]) =>
 				{
-					AnswerMarkovTable.create(talkId, table[0], table[1], table[2], () => { });
-				}
+					if (table[0] != this.markovEndDelimiter && table[1] != this.markovEndDelimiter)
+					{
+						AnswerMarkovTable.create(insertId, table[0], table[1], table[2], () => { });
+					}
+				});
 			});
 		});
 	}
