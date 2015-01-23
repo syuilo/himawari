@@ -79,6 +79,18 @@ class Twbot
 		if (status.indexOf('【') >= 0) return true;
 		if (status.indexOf('】') >= 0) return true;
 		if (status.indexOf('\n') >= 0) return true;
+		if (status.indexOf('RT') >= 0) return true;
+		return false;
+	};
+
+	/**
+	  会話の学習のフィルタ (true = 学習しない, false = 学習する)
+	  @propety {(status: string): boolean} studyFilter
+	  */
+	public studyTalkFilter = (status: string): boolean =>
+	{
+		if (status.indexOf('http') >= 0) return true;
+		if (status.indexOf('RT') >= 0) return true;
 		return false;
 	};
 
@@ -304,9 +316,17 @@ class Twbot
 							{
 								if (err == null)
 								{
+									// 自分が関わっている場合は弾く
+									if (obj.user.screen_name == this.screenName) return;
+									if (data.user.screen_name == this.screenName) return;
+
+									var q = trim(obj.text.replace(/@[a-zA-Z0-9_]+/g, ''));
+									var a = trim(status.replace(/@[a-zA-Z0-9_]+/g, ''));
+
+									if (this.studyTalkFilter(q)) return;
+									if (this.studyTalkFilter(a)) return;
+
 									// 会話を保存
-									var q = obj.text.replace(/@[a-zA-Z0-9_]+/g, '');
-									var a = status.replace(/@[a-zA-Z0-9_]+/g, '');
 									this.himawari.studyTalk(q, a);
 								}
 							});
