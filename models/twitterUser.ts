@@ -38,7 +38,7 @@ class TwitterUser
 			(err: any, twitterUsers: any[]) => callback(twitterUsers.length != 0 ? new TwitterUser(twitterUsers[0]) : null));
 	}
 
-	public update(callback?: () => void): void
+	public update(callback: () => void = () => { }): void
 	{
 		db.query('update twitterUsers set name=?, likability=? where twitterId=?',
 			[this.name, this.likability, this.twitterId],
