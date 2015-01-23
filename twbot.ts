@@ -237,7 +237,7 @@ class Twbot
 				{
 					if (err) throw err;
 
-					if (keyword != null && keyword[8] != '*' && keyword[8] != keyword[0])
+					if (keyword != null && keyword[8] != null && keyword[8] != '*' && keyword[8] != keyword[0])
 					{
 						var status = this.oboemashitashiFormat.replace('{text}', keyword[0]).replace('{yomi}', keyword[8]);
 						this.twitter.post('statuses/update', { status: status }, nullFunction);
