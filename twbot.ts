@@ -268,8 +268,8 @@ class Twbot
 					data.text = data.text.replace(/&lt;/g, '<');
 					var status: string = data.text;
 
-					// 会話(リプライ)なら(ただし自分宛てのリプライは除く)
-					if (data.in_reply_to_status_id_str != null && !status.match(new RegExp('^@' + this.screenName)))
+					// 会話(リプライ)なら(ただし自分と自分宛てのリプライは除く)
+					if (data.in_reply_to_status_id_str != null && data.user.screen_name != this.screenName && !status.match(new RegExp('^@' + this.screenName)))
 					{
 						// 学習するように設定されている場合は会話を学習する
 						if (this.isStudent)
