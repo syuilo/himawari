@@ -17,7 +17,14 @@ var filter = (text: string): string =>
 		'げる': 'げますx',
 		'する': 'しますx',
 		'たわ': 'しましたx',
+		'たな': 'ましたx',
+		'だな': 'ですわね',
+		'えた': 'えましたx',
+		'したか': 'しましたx',
 		'てるわ': 'ますx',
+		'てるぞ': 'てますx',
+		'するぞ': 'しますx',
+		'るぞ': 'りますx',
 		'るわ': 'りますx',
 		'だよ': 'ですのよ',
 		'ない': 'ませんx',
@@ -48,12 +55,14 @@ var filter = (text: string): string =>
 
 	text = text.replace(/俺/g, "私")
 		.replace(/僕/g, "私")
+		.replace(/お前/g, "あなた")
 		.replace(/!/g, "")
 		.replace(/！/g, "")
 		.replace(/しまった/g, "しまいましたわ")
 		.replace(/くれる/g, "くださる")
 		.replace(/だけど/g, "ですけれど")
 		.replace(/だっけ/g, "でしたっけ")
+		.replace(/だ$/g, '')
 		.replace(/～+$/g, '')
 		.replace(/ー+$/g, '')
 		.replace(/w+$/g, '')
