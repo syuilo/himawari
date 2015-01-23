@@ -209,7 +209,7 @@ class Twbot
 			setTimeout(() =>
 			{
 				sentReply(himawariAnswer);
-			}, 5000);
+			}, Math.floor(Math.random() * 10000));
 		});
 	}
 
