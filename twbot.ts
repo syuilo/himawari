@@ -203,6 +203,26 @@ class Twbot
 		});
 	}
 
+	public command(text: string): string
+	{
+		switch (text.replace(/\s+/g, '').replace('>', ''))
+		{
+			case 'ping':
+				return 'pong';
+				break;
+			case 'whoareyou?':
+				return this.name;
+				break;
+			case 'saysn':
+				return this.screenName;
+				break;
+			case 'areyoustudent?':
+				return this.isStudent.toString();
+				break;
+		}
+		return null;
+	}
+
 	/**
 	  返信します
 	  @method reply
@@ -218,29 +238,49 @@ class Twbot
 
 		var sentReply = (text: string) =>
 		{
+			if (text == '' || text == null) return;
 			var statusText = '@' + post.user.screen_name + ' ' + text;
 			this.tweet(statusText, post.id_str);
 		};
 
-		// コマンド
+		// Command
 		if (message[0] == '>')
 		{
-			switch (message.replace(/\s+/g, '').replace('>', ''))
+			sentReply(this.command(message));
+		}
+
+		// 返信
+		this.himawari.reply(message, (himawariAnswer: string) =>
+		{
+			setTimeout(() =>
 			{
-				case 'ping':
-					sentReply('pong');
-					break;
-				case 'whoareyou?':
-					sentReply(this.name);
-					break;
-				case 'saysn':
-					sentReply(this.screenName);
-					break;
-				case 'areyoustudent?':
-					sentReply(this.isStudent.toString());
-					break;
-			}
-			return;
+				sentReply(himawariAnswer);
+			}, Math.floor(Math.random() * 10000));
+		});
+	}
+
+	/**
+	  ダイレクトメッセージに返信します
+	  @method replyDm
+	  @param {any} dm - 返信先のダイレクトメッセージにオブジェクト
+	  @return {void} 値を返しません
+	  */
+	public replyDm(dm: any): void
+	{
+		var message = dm.text;
+
+		if (message == null) return;
+
+		var sentReply = (text: string) =>
+		{
+			if (text == '' || text == null) return;
+			this.twitter.post('direct_messages/new', { text: text, user_id: dm.sender.id_str }, nullFunction);
+		};
+
+		// Command
+		if (message[0] == '>')
+		{
+			sentReply(this.command(message));
 		}
 
 		// 返信
@@ -299,7 +339,15 @@ class Twbot
 			stream.on('data', (data: any) =>
 			{
 				//console.log(data);
-				if (data.text != null)
+
+				// ダイレクトメッセージ
+				if (data.direct_message != null)
+				{
+					// 返信
+					this.replyDm(data.direct_message);
+				}
+				// ツイート
+				else if (data.text != null)
 				{
 					data.text = data.text.replace(/&gt;/g, '>');
 					data.text = data.text.replace(/&lt;/g, '<');
