@@ -154,10 +154,11 @@ class Twbot
 
 			Himawari.morphologicalAnalyze(trend, (result: string[][]) =>
 			{
+				var length = 1 + Math.floor(Math.random() * 2);
 				this.himawari.comment(result[0][0], (comment: string) =>
 				{
 					this.twitter.post('statuses/update', { status: comment }, nullFunction);
-				});
+				}, length);
 			});
 		});
 	}
