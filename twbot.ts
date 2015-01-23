@@ -1,9 +1,15 @@
 /// <reference path="./typings/tsd.d.ts" />
 
+/*
+ * himawari - 向日葵 for TwitterBot | マルコフ連鎖ベースのお手軽bot
+ * Copyright (c) syuilo 'himawari', 'himawari for twitterBot' rights reserved
+ */
+
 var Twitter = require('twitter');
 import async = require('async');
 
 import Himawari = require('./himawari');
+import TwitterUser = require('./models/twitterUser');
 
 var nullFunction = (): void => { };
 var trim = (text: string) =>
@@ -43,10 +49,22 @@ class Twbot
 	public oboemashitashiFormat: string = '({text}......{yomi}......覚えましたし)';
 
 	/**
-	  ツイートを学習するかどうか
+	  ツイート・会話を学習するかどうか
 	  @propety {boolean} isStudent
 	  */
 	public isStudent: boolean = true;
+
+	/**
+	  リプライをふぁぼるか
+	  @propety {boolean} favReply
+	  */
+	public favReply: boolean = true;
+
+	/**
+	  リプライを受け取った時に自動でフォローするか
+	  @propety {boolean} followWhenReceiveReply
+	  */
+	public followWhenReceiveReply: boolean = true;
 
 	/**
 	  エゴふぁぼ&RTするか
@@ -188,7 +206,7 @@ class Twbot
 		{
 			if (trendsError) console.log(trendsError);
 
-			// そのなかからランダムに選択
+			// その中からランダムに選択
 			var r = Math.floor(Math.random() * trendsParams[0].trends.length);
 			var trend = trendsParams[0].trends[r].name;
 
@@ -231,31 +249,63 @@ class Twbot
 	  */
 	public reply(post: any): void
 	{
-		// @sn を取り除く
-		var message = post.text.replace(/@[a-zA-Z0-9_]+\s?/, '');
-
-		if (message == null) return;
-
-		var sentReply = (text: string) =>
+		// ふぁぼっとく
+		if (this.favReply)
 		{
-			if (text == '' || text == null) return;
-			var statusText = '@' + post.user.screen_name + ' ' + text;
-			this.tweet(statusText, post.id_str);
-		};
-
-		// Command
-		if (message[0] == '>')
-		{
-			sentReply(this.command(message));
+			this.twitter.post('favorites/create', { id: post.id_str }, nullFunction);
 		}
 
-		// 返信
-		this.himawari.reply(message, (himawariAnswer: string) =>
+		// フォローしてなかったらフォローしとく
+		if (post.user.following == null && this.followWhenReceiveReply)
 		{
-			setTimeout(() =>
+			this.twitter.post('friendships/create', { user_id: post.user.id_str, follow: false }, nullFunction);
+		}
+
+		// DBからユーザー情報を読み込み
+		TwitterUser.find(this.name, post.user.id, (twitterUser: TwitterUser) =>
+		{
+			// ユーザーが登録されていた場合
+			if (twitterUser != null)
 			{
-				sentReply(himawariAnswer);
-			}, Math.floor(Math.random() * 10000));
+				// 好感度を少し上げる
+				twitterUser.likability += 1;
+				twitterUser.update();
+			}
+			// ユーザーが登録されていなかった場合
+			else
+			{
+				// ユーザーを登録する
+				TwitterUser.create(this.name, post.user.id, post.user.name, () =>
+				{
+					
+				});
+			}
+
+			// @sn を取り除く
+			var message = post.text.replace(/@[a-zA-Z0-9_]+\s?/, '');
+			if (message == '') return;
+
+			var sentReply = (text: string) =>
+			{
+				if (text == '' || text == null) return;
+				var statusText = '@' + post.user.screen_name + ' ' + text;
+				this.tweet(statusText, post.id_str);
+			};
+
+			// Command
+			if (message[0] == '>')
+			{
+				sentReply(this.command(message));
+			}
+
+			// 返信
+			this.himawari.reply(message, (himawariAnswer: string) =>
+			{
+				setTimeout(() =>
+				{
+					sentReply(himawariAnswer);
+				}, Math.floor(Math.random() * 10000));
+			});
 		});
 	}
 
@@ -394,15 +444,6 @@ class Twbot
 							// 自分に対するリプライなら
 							if (status.match(new RegExp('^@' + this.screenName)))
 							{
-								// ふぁぼっとく
-								this.twitter.post('favorites/create', { id: data.id_str }, nullFunction);
-
-								// フォローしてなかったらフォローしとく
-								if (data.user.following == null)
-								{
-									this.twitter.post('friendships/create', { user_id: data.user.id_str, follow: false }, nullFunction);
-								}
-
 								// 返信する
 								this.reply(data);
 								return;

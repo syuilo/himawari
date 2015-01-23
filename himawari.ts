@@ -133,7 +133,7 @@ class Himawari
 					}
 				});
 			}
-			// キーワードが見つかったら
+			// これといったキーワードが見つからなかったら
 			else
 			{
 
@@ -220,6 +220,7 @@ class Himawari
 		Himawari.morphologicalAnalyze(status, (result: string[][]) =>
 		{
 			//console.log(result);
+
 			// 開始デリミタと終了デリミタを付与し3つの配列ずつに分ける
 			Himawari.getTable([this.markovBeginDelimiter], [this.markovEndDelimiter], 3, result.map(x => x[0])).forEach((table: string[]) =>
 			{

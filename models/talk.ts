@@ -26,13 +26,9 @@ class Talk
 			(err: any, info: any) =>
 			{
 				if (err)
-				{
 					console.log(err);
-				}
 				else
-				{
 					callback(info.insertId);
-				}
 			});
 	}
 
