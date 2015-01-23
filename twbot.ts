@@ -223,7 +223,6 @@ class Twbot
 
 		var text = this.recentTweet.text;
 
-		console.log('## input');
 		Himawari.morphologicalAnalyze(text, (result: string[][]) =>
 		{
 			var keyword: string[] = null;
@@ -232,18 +231,15 @@ class Twbot
 				if (keyword == null && (i[2] == '固有名詞' || (i[1] == '名詞' && i[2] == '一般')))
 				{
 					keyword = i;
-					console.log('## input - ' + keyword[0]);
 				}
 				callback();
 			}, (err: any) =>
 				{
 					if (err) throw err;
 
-					console.log('## input --- ' + keyword);
-
-					if (keyword != null && keyword[7] != '*' && keyword[7] != keyword[0])
+					if (keyword != null && keyword[8] != '*' && keyword[8] != keyword[0])
 					{
-						var status = this.oboemashitashiFormat.replace('{text}', keyword[0]).replace('{yomi}', keyword[7]);
+						var status = this.oboemashitashiFormat.replace('{text}', keyword[0]).replace('{yomi}', keyword[8]);
 						this.twitter.post('statuses/update', { status: status }, nullFunction);
 					}
 				});
