@@ -145,6 +145,26 @@ class Twbot
 	}
 
 	/**
+	  Twitterにツイートを投稿します
+	  @method tweet
+	  @param {string} text - ツイート内容
+	  @param {string} [inReplyToStatusId] - 返信先ツイートID
+	  @return {void} 値を返しません
+	  */
+	public tweet(text: string, inReplyToStatusId: string = null): void
+	{
+		text = trim(text);
+		if (text == '')
+		{
+			return;
+		}
+		else
+		{
+			this.twitter.post('statuses/update', { status: text, in_reply_to_status_id: inReplyToStatusId }, nullFunction);
+		}
+	}
+
+	/**
 	  適当につぶやきます
 	  @method comment
 	  @return {void} 値を返しません
@@ -165,7 +185,7 @@ class Twbot
 				var length = 1 + Math.floor(Math.random() * 2);
 				this.himawari.comment(result[0][0], (comment: string) =>
 				{
-					this.twitter.post('statuses/update', { status: comment }, nullFunction);
+					this.tweet(comment);
 				}, length);
 			});
 		});
@@ -187,7 +207,7 @@ class Twbot
 		var sentReply = (text: string) =>
 		{
 			var statusText = '@' + post.user.screen_name + ' ' + text;
-			this.twitter.post('statuses/update', { status: statusText, in_reply_to_status_id: post.id_str }, nullFunction);
+			this.tweet(statusText, post.id_str);
 		};
 
 		// コマンド
@@ -249,7 +269,7 @@ class Twbot
 					if (keyword != null && keyword[8] != null && keyword[8] != '*' && keyword[8] != keyword[0])
 					{
 						var status = this.oboemashitashiFormat.replace('{text}', keyword[0]).replace('{yomi}', keyword[8]);
-						this.twitter.post('statuses/update', { status: status }, nullFunction);
+						this.tweet(status);
 					}
 				});
 		});
