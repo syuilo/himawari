@@ -100,11 +100,11 @@ class Twbot
 		{
 			status = status.substr(0, status.indexOf('#'));
 		}
-		status = status.replace(/ +$/, '');
-		status = status.replace(/・+$/, '');
-		status = status.replace(/\.+$/, '');
-		status = status.replace(/ー+$/, '');
-		status = status.replace(/～+$/, '');
+		status = status.replace(/ +$/, '')
+			.replace(/・+$/, '')
+			.replace(/\.+$/, '')
+			.replace(/ー+$/, '')
+			.replace(/～+$/, '');
 
 		return status;
 	};
