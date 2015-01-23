@@ -21,7 +21,7 @@ var filter = (text: string): string =>
 		'だな': 'ですわね',
 		'えた': 'えましたx',
 		'したか': 'しましたx',
-		'てるわ': 'ますx',
+		'てるわ': 'てますx',
 		'てるぞ': 'てますx',
 		'するぞ': 'しますx',
 		'るぞ': 'りますx',
@@ -58,6 +58,9 @@ var filter = (text: string): string =>
 		.replace(/お前/g, "あなた")
 		.replace(/!/g, "")
 		.replace(/！/g, "")
+		.replace(/だよ/g, 'ですわよ')
+		.replace(/です/g, 'ですわ')
+		.replace(/ます/g, 'ますわ')
 		.replace(/しまった/g, "しまいましたわ")
 		.replace(/くれる/g, "くださる")
 		.replace(/だけど/g, "ですけれど")
