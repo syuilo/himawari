@@ -24,37 +24,37 @@ var trim = (text: string) =>
 export = Himawari;
 
 /**
-	Himawari本体です
-	@class Himawari
-	*/
+  himawari本体です
+  @class Himawari
+  */
 class Himawari
 {
 	/**
-		マルコフ連鎖用テーブルのブロック開始デリミタ
-		@propety {string} markovBeginDelimiter
-		*/
+	  マルコフ連鎖用テーブルのブロック開始デリミタ
+	  @propety {string} markovBeginDelimiter
+	  */
 	public markovBeginDelimiter: string = '<begin>';
 
 	/**
-		マルコフ連鎖用テーブルのブロック終了デリミタ
-		@propety {string} markovEndDelimiter
-		*/
+	  マルコフ連鎖用テーブルのブロック終了デリミタ
+	  @propety {string} markovEndDelimiter
+	  */
 	public markovEndDelimiter: string = '<end>';
 
 	/**
-		発言のフィルター
-		@propety {(text: string) => string} textFilter
-		*/
+	  発言のフィルター
+	  @propety {(text: string) => string} textFilter
+	  */
 	public textFilter: (text: string) => string = (text: string): string => { return text };
 
 	/**
-		キーワードに応じた発言を取得します
-		@method comment
-		@param {string} keyword - キーワード
-		@param {(comment: string) => void} callback - コールバック
-		@param {number} [length] - 何ステップで文章を終了させるかを表す数値
-		@return {void} 値を返しません
-		*/
+	  キーワードに応じた発言を取得します
+	  @method comment
+	  @param {string} keyword - キーワード
+	  @param {(comment: string) => void} callback - コールバック
+	  @param {number} [length] - 何ステップで文章を終了させるかを表す数値
+	  @return {void} 値を返しません
+	  */
 	public comment(keyword: string, callback: (comment: string) => void, length: number = 1): void
 	{
 		// キーワードで始まるブロックを検索
@@ -83,58 +83,75 @@ class Himawari
 	}
 
 	/**
-		リプに対する返信を取得します
-		@method reply
-		@param {string} text - 問い(リプ)
-		@param {(comment: string) => void} callback - コールバック
-		@param {number} [length] - 何ステップで文章を終了させるかを表す数値
-		@return {void} 値を返しません
-		*/
+	  リプに対する返信を取得します
+	  @method reply
+	  @param {string} text - 問い(リプ)
+	  @param {(comment: string) => void} callback - コールバック
+	  @param {number} [length] - 何ステップで文章を終了させるかを表す数値
+	  @return {void} 値を返しません
+	  */
 	public reply(text: string, callback: (comment: string) => void, length: number = 1): void
 	{
+		text = trim(text);
+		if (text == '')
+		{
+			callback(null);
+			return;
+		}
+
+		// キーワードを抽出
 		Himawari.getKeyword(text, (keyword: string) =>
 		{
-			// 受け取ったリプに似たリプ(Qとする)を探す
-			QuestionMarkovTable.search(keyword, (qMarkovTables: QuestionMarkovTable[]) =>
+			// キーワードが見つかったら
+			if (keyword != null)
 			{
-				// 見つかった場合
-				if (qMarkovTables != null)
+				// 抽出したキーワードを元に、受け取ったリプに似たリプ(Qとする)を探す
+				QuestionMarkovTable.search(keyword, (qMarkovTables: QuestionMarkovTable[]) =>
 				{
-					// ランダムに選択
-					var r = Math.floor(Math.random() * qMarkovTables.length);
-					var q = qMarkovTables[r];
+					// 見つかった場合
+					if (qMarkovTables != null)
+					{
+						// ランダムに選択
+						var r = Math.floor(Math.random() * qMarkovTables.length);
+						var q = qMarkovTables[r];
 
-					// Qに対する回答(Aとする)を探す(必ず質問と回答がセットで保存されるのでこれ(A)が見つからないことはない(はず))
-					AnswerMarkovTable.searchAnswer(q.talkId, (a: AnswerMarkovTable) =>
-					{
-						// Aを復元
-						Answer.find(a.talkId, (answer: Answer) =>
+						// Qに対する回答(Aとする)を探す(必ず質問と回答がセットで保存されるのでこれ(A)が見つからないことはない(はず))
+						AnswerMarkovTable.searchAnswer(q.talkId, (a: AnswerMarkovTable) =>
 						{
-							callback(trim(this.textFilter(answer.text)));
+							// Aを復元
+							Answer.find(a.talkId, (answer: Answer) =>
+							{
+								callback(trim(this.textFilter(answer.text)));
+							});
 						});
-					});
-				}
-				// 似たリプ(Q)が見つからなかった場合
-				else
-				{
-					// キーワードを起点とするマルコフ連鎖文章を適当に生成する
-					this.think(keyword, length, (comment: string) =>
+					}
+					// 似たリプ(Q)が見つからなかった場合
+					else
 					{
-						callback(trim(this.textFilter(comment)));
-					});
-				}
-			});
+						// キーワードを起点とするマルコフ連鎖文章を適当に生成する
+						this.think(keyword, length, (comment: string) =>
+						{
+							callback(trim(this.textFilter(comment)));
+						});
+					}
+				});
+			}
+			// キーワードが見つかったら
+			else
+			{
+
+			}
 		});
 	}
 
 	/**
-		キーワードに基づいてマルコフ連鎖を行い文章を生成します
-		@method think
-		@param {string} keyword - キーワード
-		@param {number} length - 何ステップで文章を終了させるかを表す数値
-		@param {(text: string) => void} callback - コールバック
-		@return {void} 値を返しません
-		*/
+	  キーワードに基づいてマルコフ連鎖を行い文章を生成します
+	  @method think
+	  @param {string} keyword - キーワード
+	  @param {number} length - 何ステップで文章を終了させるかを表す数値
+	  @param {(text: string) => void} callback - コールバック
+	  @return {void} 値を返しません
+	  */
 	public think(keyword: string, length: number, callback: (text: string) => void): void
 	{
 		var text = '';
@@ -193,11 +210,11 @@ class Himawari
 	}
 
 	/**
-		発言を学習します
-		@method study
-		@param {string} status - 発言内容
-		@return {void} 値を返しません
-		*/
+	  発言を学習します
+	  @method study
+	  @param {string} status - 発言内容
+	  @return {void} 値を返しません
+	  */
 	public study(status: string): void
 	{
 		if (status == null) return;
@@ -219,12 +236,12 @@ class Himawari
 	}
 
 	/**
-		会話を学習します
-		@method studyTalk
-		@param {string} q - Q
-		@param {string} a - A
-		@return {void} 値を返しません
-		*/
+	  会話を学習します
+	  @method studyTalk
+	  @param {string} q - Q
+	  @param {string} a - A
+	  @return {void} 値を返しません
+	  */
 	public studyTalk(q: string, a: string): void
 	{
 		if (q == null || a == null) return;
@@ -274,14 +291,21 @@ class Himawari
 	}
 
 	/**
-		テキストからキーワードを抽出します
-		@method getKeyword
-		@param {string} source - テキスト
-		@param {(keyword: string) => void} callback - コールバック
-		@return {void} 値を返しません
-		*/
+	  テキストからキーワードを抽出します
+	  @method getKeyword
+	  @param {string} source - テキスト
+	  @param {(keyword: string) => void} callback - コールバック
+	  @return {void} 値を返しません
+	  */
 	static getKeyword(source: string, callback: (keyword: string) => void): void
 	{
+		source = trim(source);
+		if (source == '')
+		{
+			callback(null);
+			return;
+		}
+
 		Himawari.morphologicalAnalyze(source, (result: string[][]) =>
 		{
 			var keywords: string[] = [];
@@ -303,12 +327,12 @@ class Himawari
 	}
 
 	/**
-		形態素解析を行います
-		@method analyze
-		@param {string} text - テキスト
-		@param {(result: any) => void} callback - コールバック
-		@return {void} 値を返しません
-		*/
+	  形態素解析を行います
+	  @method analyze
+	  @param {string} text - テキスト
+	  @param {(result: any) => void} callback - コールバック
+	  @return {void} 値を返しません
+	  */
 	static morphologicalAnalyze(text: string, callback: (result: any) => void): void
 	{
 		MeCab.parse(text, (err: any, result: any) =>
@@ -319,7 +343,6 @@ class Himawari
 			}
 			else
 			{
-				//console.log(result);
 				callback(result);
 			}
 		});
