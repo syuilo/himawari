@@ -16,6 +16,11 @@ import AnswerMarkovTable = require('./models/answerMarkovTable');
 import Question = require('./models/question');
 import Answer = require('./models/answer');
 
+var trim = (text: string) =>
+{
+	return text.replace(/^[\s　]+|[\s　]+$/g, '');
+}
+
 export = Himawari;
 
 /**
@@ -60,7 +65,7 @@ class Himawari
 			{
 				this.think(keyword, length, (comment: string) =>
 				{
-					callback(this.textFilter(comment));
+					callback(trim(this.textFilter(comment)));
 				});
 			}
 			// キーワードで始まるブロックが見つからなかった場合
@@ -70,7 +75,7 @@ class Himawari
 				{
 					this.think(statusMarkovTable.two, length, (comment: string) =>
 					{
-						callback(this.textFilter(comment));
+						callback(trim(this.textFilter(comment)));
 					});
 				});
 			}
@@ -105,7 +110,7 @@ class Himawari
 						// Aを復元
 						Answer.find(a.talkId, (answer: Answer) =>
 						{
-							callback(this.textFilter(answer.text));
+							callback(trim(this.textFilter(answer.text)));
 						});
 					});
 				}
@@ -115,7 +120,7 @@ class Himawari
 					// キーワードを起点とするマルコフ連鎖文章を適当に生成する
 					this.think(keyword, length, (comment: string) =>
 					{
-						callback(this.textFilter(comment));
+						callback(trim(this.textFilter(comment)));
 					});
 				}
 			});
