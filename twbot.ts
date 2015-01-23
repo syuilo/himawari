@@ -343,6 +343,9 @@ class Twbot
 				// ダイレクトメッセージ
 				if (data.direct_message != null)
 				{
+					// 自分のDMは弾く
+					if (data.direct_message.sender.screen_name == this.screenName) return;
+
 					// 返信
 					this.replyDm(data.direct_message);
 				}
