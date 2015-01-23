@@ -6,13 +6,17 @@ import async = require('async');
 import Himawari = require('./himawari');
 
 var nullFunction = (): void => { };
+var trim = (text: string) =>
+{
+	return text.replace(/^[\s　]+|[\s　]+$/g, '');
+}
 
 export = Twbot;
 
 /**
-	HimawariのTwitterBot実装です
-	@class Twbot
-	*/
+  himawariのTwitterBot実装です
+  @class Twbot
+  */
 class Twbot
 {
 	public himawari: Himawari;
@@ -21,36 +25,40 @@ class Twbot
 	public recentTweet: any = null;
 
 	/**
-		botの名前
-		@propety {string} name
-		*/
+	  botの名前
+	  @propety {string} name
+	  */
 	public name: string;
 
 	/**
-		botのユーザー名(Screen name)
-		@propety {string} screenName
-		*/
+	  botのユーザー名(Screen name)
+	  @propety {string} screenName
+	  */
 	public screenName: string;
 
 	/**
-		覚えましたしツイート時のツイートフォーマット
-		@propety {string} oboemashitashiFormat
-		*/
+	  覚えましたしツイート時のツイートフォーマット
+	  @propety {string} oboemashitashiFormat
+	  */
 	public oboemashitashiFormat: string = '({text}......{yomi}......覚えましたし)';
 
 	/**
-		ツイートを学習するかどうか
-		@propety {boolean} isStudent
-		*/
+	  ツイートを学習するかどうか
+	  @propety {boolean} isStudent
+	  */
 	public isStudent: boolean = true;
 
 	/**
-		エゴふぁぼ&RTするか
-		@propety {boolean} canEgoFavRt
-		*/
+	  エゴふぁぼ&RTするか
+	  @propety {boolean} canEgoFavRt
+	  */
 	public canEgoFavRt: boolean = true;
 
-	public statusFilter = (status: string): boolean =>
+	/**
+	  学習するソースのフィルタ (true = 学習しない, false = 学習する)
+	  @propety {(status: string): boolean} studyFilter
+	  */
+	public studyFilter = (status: string): boolean =>
 	{
 		if (status.indexOf('http') >= 0) return true;
 		if (status.indexOf(':') >= 0) return true;
@@ -110,16 +118,16 @@ class Twbot
 	};
 
 	/**
-		@class Himawari.Twbot
-		@constructor
-		@param {string} name - botの名前
-		@param {string} screenName - botのユーザー名(Screen name)
-		@param {string} ck - コンシューマーキー
-		@param {string} cs - コンシューマーシークレット
-		@param {string} at - アクセストークン
-		@param {string} ats - アクセストークンシークレット
-		@param {(text: string) => string} [textFilter] - 発言のフィルター
-		*/
+	  @class Himawari.Twbot
+	  @constructor
+	  @param {string} name - botの名前
+	  @param {string} screenName - botのユーザー名(Screen name)
+	  @param {string} ck - コンシューマーキー
+	  @param {string} cs - コンシューマーシークレット
+	  @param {string} at - アクセストークン
+	  @param {string} ats - アクセストークンシークレット
+	  @param {(text: string) => string} [textFilter] - 発言のフィルター
+	  */
 	constructor(name: string, screenName: string, ck: string, cs: string, at: string, ats: string, textFilter: (text: string) => string = (text: string): string => { return text })
 	{
 		this.himawari = new Himawari();
@@ -137,10 +145,10 @@ class Twbot
 	}
 
 	/**
-		適当につぶやきます
-		@method comment
-		@return {void} 値を返しません
-		*/
+	  適当につぶやきます
+	  @method comment
+	  @return {void} 値を返しません
+	  */
 	public comment(): void
 	{
 		// トレンドを取得
@@ -164,11 +172,11 @@ class Twbot
 	}
 
 	/**
-		返信します
-		@method reply
-		@param {any} post - 返信先の投稿オブジェクト
-		@return {void} 値を返しません
-		*/
+	  返信します
+	  @method reply
+	  @param {any} post - 返信先の投稿オブジェクト
+	  @return {void} 値を返しません
+	  */
 	public reply(post: any): void
 	{
 		// @sn を取り除く
@@ -214,10 +222,10 @@ class Twbot
 	}
 
 	/**
-		覚えましたし
-		@method oboemashitashi
-		@return {void} 値を返しません
-		*/
+	  覚えましたし
+	  @method oboemashitashi
+	  @return {void} 値を返しません
+	  */
 	public oboemashitashi(): void
 	{
 		if (this.recentTweet == null) return;
@@ -248,10 +256,10 @@ class Twbot
 	}
 
 	/**
-		Streamの待受を開始します
-		@method begin
-		@return {void} 値を返しません
-		*/
+	  Streamの待受を開始します
+	  @method begin
+	  @return {void} 値を返しません
+	  */
 	public begin(): void
 	{
 		this.twitter.stream('user', { replies: 'all' }, (stream: any) =>
@@ -317,7 +325,7 @@ class Twbot
 							}
 
 							if (status.indexOf('@') >= 0) return;
-							if (this.statusFilter(status)) return;
+							if (this.studyFilter(status)) return;
 
 							status = this.trimStatus(status);
 
