@@ -46,19 +46,19 @@ var filter = (text: string): string =>
 	};
 	var gobiChange = false;
 
-	text = text.replace(/俺/g, "私");
-	text = text.replace(/僕/g, "私");
-	text = text.replace(/!/g, "");
-	text = text.replace(/！/g, "");
-	text = text.replace(/しまった/g, "しまいましたわ");
-	text = text.replace(/くれる/g, "くださる");
-	text = text.replace(/だけど/g, "ですけれど");
-	text = text.replace(/だっけ/g, "でしたっけ");
-	text = text.replace(/～+$/g, '');
-	text = text.replace(/ー+$/g, '');
-	text = text.replace(/w+$/g, '');
-	text = text.replace(/ｗ+$/g, '');
-	text = text.replace(/。+$/g, '');
+	text = text.replace(/俺/g, "私")
+		.replace(/僕/g, "私")
+		.replace(/!/g, "")
+		.replace(/！/g, "")
+		.replace(/しまった/g, "しまいましたわ")
+		.replace(/くれる/g, "くださる")
+		.replace(/だけど/g, "ですけれど")
+		.replace(/だっけ/g, "でしたっけ")
+		.replace(/～+$/g, '')
+		.replace(/ー+$/g, '')
+		.replace(/w+$/g, '')
+		.replace(/ｗ+$/g, '')
+		.replace(/。+$/g, '');
 
 	for (var key in gobi)
 	{
