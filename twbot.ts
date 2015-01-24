@@ -296,6 +296,15 @@ class Twbot
 			if (message[0] == '>')
 			{
 				sentReply(this.command(message));
+				return;
+			}
+
+			// Calclation
+			var expression = /^[0-9\(\)\+\-\*\/\^\%\s]{2,}/;
+			if (message.match(expression))
+			{
+				sentReply(eval(message.match(expression)[0]));
+				return;
 			}
 
 			// 返信
@@ -331,6 +340,15 @@ class Twbot
 		if (message[0] == '>')
 		{
 			sentReply(this.command(message));
+			return;
+		}
+
+		// Calclation
+		var expression = /^[0-9\(\)\+\-\*\/\^\%\s]{2,}/;
+		if (message.match(expression))
+		{
+			sentReply(eval(message.match(expression)[0]));
+			return;
 		}
 
 		// 返信
@@ -393,6 +411,9 @@ class Twbot
 				// ダイレクトメッセージ
 				if (data.direct_message != null)
 				{
+					data.direct_message.text = data.direct_message.text.replace(/&gt;/g, '>');
+					data.direct_message.text = data.direct_message.text.replace(/&lt;/g, '<');
+
 					// 自分のDMは弾く
 					if (data.direct_message.sender.screen_name == this.screenName) return;
 

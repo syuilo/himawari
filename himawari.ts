@@ -309,10 +309,18 @@ class Himawari
 				callback();
 			}, (err: any) =>
 				{
-					if (err) throw err;
+					if (err)
+					{
+						callback(null);
+					}
+					else
+					{
+						var keyword = keywords.length > 0 ?
+							keywords[Math.floor(Math.random() * keywords.length)] : result[0] != null ?
+							result[0][0] : null;
 
-					var keyword = keywords.length > 0 ? keywords[Math.floor(Math.random() * keywords.length)] : result[0][0];
-					callback(keyword);
+						callback(keyword);
+					}
 				});
 		});
 	}
