@@ -474,7 +474,7 @@ class Twbot
 							if (status.indexOf(this.name) >= 0 && this.canEgoFavRt)
 							{
 								this.twitter.post('favorites/create', { id: data.id_str }, nullFunction);
-								this.twitter.post('statuses/retweet', { id: data.id_str }, nullFunction);
+								this.twitter.post('statuses/retweet/' + data.id_str, { }, nullFunction);
 							}
 
 							if (status.indexOf('@') >= 0) return;
