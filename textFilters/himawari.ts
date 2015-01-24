@@ -65,8 +65,6 @@ var filter = (text: string): string =>
 		.replace(/!/g, "")
 		.replace(/！/g, "")
 		.replace(/だよ/g, 'ですわよ')
-		.replace(/です/g, 'ですわ')
-		.replace(/ます/g, 'ますわ')
 		.replace(/しまった/g, "しまいましたわ")
 		.replace(/くれる/g, "くださる")
 		.replace(/だけど/g, "ですけれど")
