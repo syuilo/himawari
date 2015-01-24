@@ -307,7 +307,7 @@ class Twbot
 			}
 
 			// Calclation
-			var expression = /^[0-9\(\)\+\-\*\/\^\%\s]{2,}/;
+			var expression = /^[0-9\.\(\)\+\-\*\/\^\%\s]{2,}/;
 			if (message.match(expression))
 			{
 				sentReply(eval(message.match(expression)[0]));
