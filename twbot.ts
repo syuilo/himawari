@@ -108,6 +108,13 @@ class Twbot
 	public studyTalkFilter = (status: string): boolean =>
 	{
 		if (status.indexOf('http') >= 0) return true;
+		if (status.indexOf(':') >= 0) return true;
+		if (status.indexOf('：') >= 0) return true;
+		if (status.indexOf('<') >= 0) return true;
+		if (status.indexOf('>') >= 0) return true;
+		if (status.indexOf('&gt;') >= 0) return true;
+		if (status.indexOf('&lt;') >= 0) return true;
+		if (status.indexOf('\n') >= 0) return true;
 		if (status.indexOf('RT') >= 0) return true;
 		return false;
 	};
@@ -448,6 +455,9 @@ class Twbot
 									if (this.studyTalkFilter(q)) return;
 									if (this.studyTalkFilter(a)) return;
 
+									q = this.trimStatus(q);
+									a = this.trimStatus(a);
+
 									// 会話を保存
 									this.himawari.studyTalk(q, a);
 								}
@@ -477,12 +487,15 @@ class Twbot
 								this.twitter.post('statuses/retweet/' + data.id_str, { }, nullFunction);
 							}
 
-							if (status.indexOf('@') >= 0) return;
-							if (this.studyFilter(status)) return;
+							// 学習
+							if (this.isStudent)
+							{
+								if (status.indexOf('@') >= 0) return;
+								if (this.studyFilter(status)) return;
 
-							status = this.trimStatus(status);
-
-							if (this.isStudent) this.himawari.study(status);
+								status = this.trimStatus(status);
+								this.himawari.study(status);
+							}
 						}
 					}
 				}
