@@ -341,7 +341,7 @@ class Twbot
 		var expression = /^[0-9\(\)\+\-\*\/\^\%\s]{2,}/;
 		if (message.match(expression))
 		{
-			sentReply(eval(message.match(expression)[0]));
+			sentReply(eval(message.match(expression)[0]).toString());
 			return;
 		}
 
