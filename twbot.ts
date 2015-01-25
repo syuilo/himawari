@@ -276,60 +276,39 @@ class Twbot
 	  */
 	public reply(post: any): void
 	{
-		// DBからユーザー情報を読み込み
-		TwitterUser.find(this.name, post.user.id, (twitterUser: TwitterUser) =>
+		// @sn を取り除く
+		var message = post.text.replace(/@[a-zA-Z0-9_]+\s?/, '');
+		if (message == '') return;
+
+		var sentReply = (text: string) =>
 		{
-			// ユーザーが登録されていた場合
-			if (twitterUser != null)
-			{
-				// 好感度を少し上げる
-				twitterUser.likability += 1;
-				twitterUser.update();
-			}
-			// ユーザーが登録されていなかった場合
-			else
-			{
-				// ユーザーを登録する
-				TwitterUser.create(this.name, post.user.id, post.user.name, () =>
-				{
+			if (text == '' || text == null) return;
+			var statusText = '@' + post.user.screen_name + ' ' + text;
+			this.tweet(statusText, post.id_str);
+		};
 
-				});
-			}
+		// Command
+		if (message[0] == '>')
+		{
+			sentReply(this.command(message));
+			return;
+		}
 
-			// @sn を取り除く
-			var message = post.text.replace(/@[a-zA-Z0-9_]+\s?/, '');
-			if (message == '') return;
+		// Calclation
+		var expression = /^[0-9\.\(\)\+\-\*\/\^\%\s]{2,}/;
+		if (message.match(expression))
+		{
+			sentReply(eval(message.match(expression)[0]));
+			return;
+		}
 
-			var sentReply = (text: string) =>
+		// 返信
+		this.himawari.reply(message, (himawariAnswer: string) =>
+		{
+			setTimeout(() =>
 			{
-				if (text == '' || text == null) return;
-				var statusText = '@' + post.user.screen_name + ' ' + text;
-				this.tweet(statusText, post.id_str);
-			};
-
-			// Command
-			if (message[0] == '>')
-			{
-				sentReply(this.command(message));
-				return;
-			}
-
-			// Calclation
-			var expression = /^[0-9\.\(\)\+\-\*\/\^\%\s]{2,}/;
-			if (message.match(expression))
-			{
-				sentReply(eval(message.match(expression)[0]));
-				return;
-			}
-
-			// 返信
-			this.himawari.reply(message, (himawariAnswer: string) =>
-			{
-				setTimeout(() =>
-				{
-					sentReply(himawariAnswer);
-				}, 5000 + Math.floor(Math.random() * 10000));
-			});
+				sentReply(himawariAnswer);
+			}, 3000 + Math.floor(Math.random() * 5000));
 		});
 	}
 
@@ -372,7 +351,7 @@ class Twbot
 			setTimeout(() =>
 			{
 				sentReply(himawariAnswer);
-			}, Math.floor(Math.random() * 10000));
+			}, 3000 + Math.floor(Math.random() * 5000));
 		});
 	}
 
