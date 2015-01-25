@@ -21,14 +21,21 @@ class TwitterUser
 		this.createdAt = twitterUser.createdAt;
 	}
 
-	public static create(botName: string, twitterId: number, name: string, callback: () => void): void {
+	public static create(botName: string, twitterId: number, name: string, callback: (twitterUser: TwitterUser) => void): void {
 		db.query('insert into twitterUsers (botName, twitterId, name) values (?, ?, ?)',
 			[botName, twitterId, name],
 			(err: any, info: any) => {
 				if (err)
+				{
 					console.log(err);
+				}
 				else
-					callback();
+				{
+					TwitterUser.find(botName, twitterId, (twitterUser: TwitterUser) =>
+					{
+						callback(twitterUser);
+					});
+				}
 			});
 	}
 

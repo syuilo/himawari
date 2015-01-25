@@ -202,6 +202,26 @@ class Twbot
 	}
 
 	/**
+	  ダイレクトメッセージを送信します
+	  @method tweet
+	  @param {string} text - メッセージ
+	  @param {string} userId - 送信先ユーザーのID
+	  @return {void} 値を返しません
+	  */
+	public createDirectMessage(text: string, userId: string): void
+	{
+		text = trim(text);
+		if (text == '')
+		{
+			return;
+		}
+		else
+		{
+			this.twitter.post('direct_messages/new', { text: text, user_id: userId }, nullFunction);
+		}
+	}
+
+	/**
 	  適当につぶやきます
 	  @method comment
 	  @return {void} 値を返しません
@@ -256,18 +276,6 @@ class Twbot
 	  */
 	public reply(post: any): void
 	{
-		// ふぁぼっとく
-		if (this.favReply)
-		{
-			this.twitter.post('favorites/create', { id: post.id_str }, nullFunction);
-		}
-
-		// フォローしてなかったらフォローしとく
-		if (post.user.following == null && this.followWhenReceiveReply)
-		{
-			this.twitter.post('friendships/create', { user_id: post.user.id_str, follow: false }, nullFunction);
-		}
-
 		// DBからユーザー情報を読み込み
 		TwitterUser.find(this.name, post.user.id, (twitterUser: TwitterUser) =>
 		{
@@ -284,7 +292,7 @@ class Twbot
 				// ユーザーを登録する
 				TwitterUser.create(this.name, post.user.id, post.user.name, () =>
 				{
-					
+
 				});
 			}
 
@@ -320,7 +328,7 @@ class Twbot
 				setTimeout(() =>
 				{
 					sentReply(himawariAnswer);
-				}, Math.floor(Math.random() * 10000));
+				}, 5000 + Math.floor(Math.random() * 10000));
 			});
 		});
 	}
@@ -340,7 +348,7 @@ class Twbot
 		var sentReply = (text: string) =>
 		{
 			if (text == '' || text == null) return;
-			this.twitter.post('direct_messages/new', { text: text, user_id: dm.sender.id_str }, nullFunction);
+			this.createDirectMessage(text, dm.sender.id_str);
 		};
 
 		// Command
@@ -407,14 +415,12 @@ class Twbot
 	  @method begin
 	  @return {void} 値を返しません
 	  */
-	public begin(): void
+	public begin(tweet: (user: any, status: any) => void = null, reply: (user: any, status: any) => void = null, dm: (user: any, dm: any) => void = null)
 	{
 		this.twitter.stream('user', { replies: 'all' }, (stream: any) =>
 		{
 			stream.on('data', (data: any) =>
 			{
-				//console.log(data);
-
 				// ダイレクトメッセージ
 				if (data.direct_message != null)
 				{
@@ -424,8 +430,20 @@ class Twbot
 					// 自分のDMは弾く
 					if (data.direct_message.sender.screen_name == this.screenName) return;
 
-					// 返信
-					this.replyDm(data.direct_message);
+					TwitterUser.find(this.name, data.direct_message.sender.id, (twitterUser: TwitterUser) =>
+					{
+						if (twitterUser == null)
+						{
+							TwitterUser.create(this.name, data.direct_message.sender.id, data.direct_message.sender.name, (createdTwitterUser: TwitterUser) =>
+							{
+								if (dm != null) dm(createdTwitterUser, data.direct_message);
+							});
+						}
+						else
+						{
+							if (dm != null) dm(twitterUser, data.direct_message);
+						}
+					});
 				}
 				// ツイート
 				else if (data.text != null)
@@ -475,8 +493,28 @@ class Twbot
 							// 自分に対するリプライなら
 							if (status.match(new RegExp('^@' + this.screenName)))
 							{
-								// 返信する
-								this.reply(data);
+								// ふぁぼっとく
+								if (this.favReply)
+									this.twitter.post('favorites/create', { id: data.id_str }, nullFunction);
+
+								// フォローしてなかったらフォローしとく
+								if (data.user.following == null && this.followWhenReceiveReply)
+									this.twitter.post('friendships/create', { user_id: data.user.id_str, follow: false }, nullFunction);
+
+								TwitterUser.find(this.name, data.user.id, (twitterUser: TwitterUser) =>
+								{
+									if (twitterUser == null)
+									{
+										TwitterUser.create(this.name, data.user.id, data.user.name, (createdTwitterUser: TwitterUser) =>
+										{
+											if (reply != null) reply(createdTwitterUser, data);
+										});
+									}
+									else
+									{
+										if (reply != null) reply(twitterUser, data);
+									}
+								});
 								return;
 							}
 
@@ -484,8 +522,13 @@ class Twbot
 							if (status.indexOf(this.name) >= 0 && this.canEgoFavRt)
 							{
 								this.twitter.post('favorites/create', { id: data.id_str }, nullFunction);
-								this.twitter.post('statuses/retweet/' + data.id_str, { }, nullFunction);
+								this.twitter.post('statuses/retweet/' + data.id_str, {}, nullFunction);
 							}
+
+							TwitterUser.find(this.name, data.user.id, (twitterUser: TwitterUser) =>
+							{
+								if (tweet != null) tweet(twitterUser, data);
+							});
 
 							// 学習
 							if (this.isStudent)
