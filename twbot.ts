@@ -522,6 +522,12 @@ class Twbot
 					}
 				}
 			});
+
+			stream.on('error', (error: any) =>
+			{
+				console.log(error);
+				throw error;
+			});
 		});
 	}
 }
