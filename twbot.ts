@@ -73,6 +73,18 @@ class Twbot
 	public canEgoFavRt: boolean = true;
 
 	/**
+	  Bot監視用Webページを利用するか
+	  @propety {boolean} canServeWebPlayground
+	  */
+	public canServeWebPlayground: boolean = true;
+
+	/**
+	  Bot監視用Webページの待ち受けポート
+	  @propety {number} webPlaygroundPort
+	  */
+	public webPlaygroundPort: number = 80;
+
+	/**
 	  学習するソースのフィルタ (true = 学習しない, false = 学習する)
 	  @propety {(status: string): boolean} studyFilter
 	  */
@@ -396,138 +408,151 @@ class Twbot
 	  */
 	public begin(tweet: (user: any, status: any) => void = null, reply: (user: any, status: any) => void = null, dm: (user: any, dm: any) => void = null)
 	{
-		this.twitter.stream('user', { replies: 'all' }, (stream: any) =>
+		var connect = () =>
 		{
-			stream.on('data', (data: any) =>
+			this.twitter.stream('user', { replies: 'all' }, (stream: any) =>
 			{
-				// ダイレクトメッセージ
-				if (data.direct_message != null)
+				stream.on('data', (data: any) =>
 				{
-					data.direct_message.text = data.direct_message.text.replace(/&gt;/g, '>');
-					data.direct_message.text = data.direct_message.text.replace(/&lt;/g, '<');
-
-					// 自分のDMは弾く
-					if (data.direct_message.sender.screen_name == this.screenName) return;
-
-					TwitterUser.find(this.name, data.direct_message.sender.id, (twitterUser: TwitterUser) =>
+					// ダイレクトメッセージ
+					if (data.direct_message != null)
 					{
-						if (twitterUser == null)
+						data.direct_message.text = data.direct_message.text.replace(/&gt;/g, '>');
+						data.direct_message.text = data.direct_message.text.replace(/&lt;/g, '<');
+
+						// 自分のDMは弾く
+						if (data.direct_message.sender.screen_name == this.screenName) return;
+
+						TwitterUser.find(this.name, data.direct_message.sender.id, (twitterUser: TwitterUser) =>
 						{
-							TwitterUser.create(this.name, data.direct_message.sender.id, data.direct_message.sender.name, (createdTwitterUser: TwitterUser) =>
+							if (twitterUser == null)
 							{
-								if (dm != null) dm(createdTwitterUser, data.direct_message);
-							});
+								TwitterUser.create(this.name, data.direct_message.sender.id, data.direct_message.sender.name, (createdTwitterUser: TwitterUser) =>
+								{
+									if (dm != null) dm(createdTwitterUser, data.direct_message);
+								});
+							}
+							else
+							{
+								if (dm != null) dm(twitterUser, data.direct_message);
+							}
+						});
+					}
+					// ツイート
+					else if (data.text != null)
+					{
+						data.text = data.text.replace(/&gt;/g, '>');
+						data.text = data.text.replace(/&lt;/g, '<');
+						var status: string = data.text;
+
+						// 会話(リプライ)なら(ただし自分と自分宛てのリプライは除く)
+						if (data.in_reply_to_status_id_str != null && data.user.screen_name != this.screenName && !status.match(new RegExp('^@' + this.screenName)))
+						{
+							// 学習するように設定されている場合は会話を学習する
+							if (this.isStudent)
+							{
+								// 会話を学習するためにリプライ先のツイートを取得する
+								this.twitter.get('statuses/show', { id: data.in_reply_to_status_id_str }, (err: any, obj: any, res: any) =>
+								{
+									if (err == null)
+									{
+										// 自分が関わっている場合は弾く
+										if (obj.user.screen_name == this.screenName) return;
+										if (data.user.screen_name == this.screenName) return;
+
+										var q = trim(obj.text.replace(/@[a-zA-Z0-9_]+/g, ''));
+										var a = trim(status.replace(/@[a-zA-Z0-9_]+/g, ''));
+
+										if (this.studyTalkFilter(q)) return;
+										if (this.studyTalkFilter(a)) return;
+
+										q = this.trimStatus(q);
+										a = this.trimStatus(a);
+
+										// 会話を保存
+										this.himawari.studyTalk(q, a);
+									}
+								});
+							}
 						}
+						// 通常のツイートなら
 						else
 						{
-							if (dm != null) dm(twitterUser, data.direct_message);
-						}
-					});
-				}
-				// ツイート
-				else if (data.text != null)
-				{
-					data.text = data.text.replace(/&gt;/g, '>');
-					data.text = data.text.replace(/&lt;/g, '<');
-					var status: string = data.text;
-
-					// 会話(リプライ)なら(ただし自分と自分宛てのリプライは除く)
-					if (data.in_reply_to_status_id_str != null && data.user.screen_name != this.screenName && !status.match(new RegExp('^@' + this.screenName)))
-					{
-						// 学習するように設定されている場合は会話を学習する
-						if (this.isStudent)
-						{
-							// 会話を学習するためにリプライ先のツイートを取得する
-							this.twitter.get('statuses/show', { id: data.in_reply_to_status_id_str }, (err: any, obj: any, res: any) =>
+							// 自分自信のツイートは弾く
+							if (data.user.screen_name != this.screenName)
 							{
-								if (err == null)
+								this.recentTweet = data;
+
+								// 自分に対するリプライなら
+								if (status.match(new RegExp('^@' + this.screenName)))
 								{
-									// 自分が関わっている場合は弾く
-									if (obj.user.screen_name == this.screenName) return;
-									if (data.user.screen_name == this.screenName) return;
+									// ふぁぼっとく
+									if (this.favReply)
+										this.twitter.post('favorites/create', { id: data.id_str }, nullFunction);
 
-									var q = trim(obj.text.replace(/@[a-zA-Z0-9_]+/g, ''));
-									var a = trim(status.replace(/@[a-zA-Z0-9_]+/g, ''));
+									// フォローしてなかったらフォローしとく
+									if (data.user.following == null && this.followWhenReceiveReply)
+										this.twitter.post('friendships/create', { user_id: data.user.id_str, follow: false }, nullFunction);
 
-									if (this.studyTalkFilter(q)) return;
-									if (this.studyTalkFilter(a)) return;
-
-									q = this.trimStatus(q);
-									a = this.trimStatus(a);
-
-									// 会話を保存
-									this.himawari.studyTalk(q, a);
+									TwitterUser.find(this.name, data.user.id, (twitterUser: TwitterUser) =>
+									{
+										if (twitterUser == null)
+										{
+											TwitterUser.create(this.name, data.user.id, data.user.name, (createdTwitterUser: TwitterUser) =>
+											{
+												if (reply != null) reply(createdTwitterUser, data);
+											});
+										}
+										else
+										{
+											if (reply != null) reply(twitterUser, data);
+										}
+									});
+									return;
 								}
-							});
-						}
-					}
-					// 通常のツイートなら
-					else
-					{
-						// 自分自信のツイートは弾く
-						if (data.user.screen_name != this.screenName)
-						{
-							this.recentTweet = data;
 
-							// 自分に対するリプライなら
-							if (status.match(new RegExp('^@' + this.screenName)))
-							{
-								// ふぁぼっとく
-								if (this.favReply)
+								// エゴふぁぼRT
+								if (status.indexOf(this.name) >= 0 && this.canEgoFavRt)
+								{
 									this.twitter.post('favorites/create', { id: data.id_str }, nullFunction);
-
-								// フォローしてなかったらフォローしとく
-								if (data.user.following == null && this.followWhenReceiveReply)
-									this.twitter.post('friendships/create', { user_id: data.user.id_str, follow: false }, nullFunction);
+									this.twitter.post('statuses/retweet/' + data.id_str, {}, nullFunction);
+								}
 
 								TwitterUser.find(this.name, data.user.id, (twitterUser: TwitterUser) =>
 								{
-									if (twitterUser == null)
-									{
-										TwitterUser.create(this.name, data.user.id, data.user.name, (createdTwitterUser: TwitterUser) =>
-										{
-											if (reply != null) reply(createdTwitterUser, data);
-										});
-									}
-									else
-									{
-										if (reply != null) reply(twitterUser, data);
-									}
+									if (tweet != null) tweet(twitterUser, data);
 								});
-								return;
-							}
 
-							// エゴふぁぼRT
-							if (status.indexOf(this.name) >= 0 && this.canEgoFavRt)
-							{
-								this.twitter.post('favorites/create', { id: data.id_str }, nullFunction);
-								this.twitter.post('statuses/retweet/' + data.id_str, {}, nullFunction);
-							}
+								// 学習
+								if (this.isStudent)
+								{
+									if (status.indexOf('@') >= 0) return;
+									if (this.studyFilter(status)) return;
 
-							TwitterUser.find(this.name, data.user.id, (twitterUser: TwitterUser) =>
-							{
-								if (tweet != null) tweet(twitterUser, data);
-							});
-
-							// 学習
-							if (this.isStudent)
-							{
-								if (status.indexOf('@') >= 0) return;
-								if (this.studyFilter(status)) return;
-
-								status = this.trimStatus(status);
-								this.himawari.study(status);
+									status = this.trimStatus(status);
+									this.himawari.study(status);
+								}
 							}
 						}
 					}
-				}
-			});
+				});
 
-			stream.on('error', (error: any) =>
-			{
-				console.log(error);
-				throw error;
+				stream.on('error', (error: any) =>
+				{
+					console.log(error);
+					throw error;
+				});
+
+				return stream;
 			});
-		});
+		};
+
+		var st: any = connect();
+
+		setInterval(() =>
+		{
+			st.destroy;
+			st = connect();
+		}, 86400000); // 24時間
 	}
 }
