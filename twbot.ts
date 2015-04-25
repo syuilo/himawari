@@ -211,7 +211,9 @@ class Twbot
 
 			this.webServer.get('/', function (req: express.Request, res: express.Response) {
 				console.log('kyoppie');
-				res.render('home', this);
+				res.render('home', {
+					bot: this
+				});
 			});
 
 			this.webServer.listen(webPort);
