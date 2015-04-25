@@ -8,14 +8,13 @@
 var Twitter = require('twitter');
 import async = require('async');
 import express = require('express');
-import socketio = require('socket.io');
+import SocketIO = require('socket.io');
 
 import Himawari = require('./himawari');
 import TwitterUser = require('./models/twitterUser');
 
 var nullFunction = (): void => { };
-var trim = (text: string) =>
-{
+var trim = (text: string) => {
 	return text.replace(/^[\s　]+|[\s　]+$/g, '');
 }
 
@@ -25,8 +24,7 @@ export = Twbot;
   himawariのTwitterBot実装です
   @class Twbot
   */
-class Twbot
-{
+class Twbot {
 	public himawari: Himawari;
 
 	public twitter: any;
@@ -94,12 +92,13 @@ class Twbot
 
 	private webServer: express.Express;
 
+	private webStreamingSockets: SocketIO.Socket[] = [];
+
 	/**
 	  学習するソースのフィルタ (true = 学習しない, false = 学習する)
 	  @propety {(status: string): boolean} studyFilter
 	  */
-	public studyFilter = (status: string): boolean =>
-	{
+	public studyFilter = (status: string): boolean => {
 		if (status.indexOf('http') >= 0) return true;
 		if (status.indexOf(':') >= 0) return true;
 		if (status.indexOf('：') >= 0) return true;
@@ -127,8 +126,7 @@ class Twbot
 	  会話の学習のフィルタ (true = 学習しない, false = 学習する)
 	  @propety {(status: string): boolean} studyFilter
 	  */
-	public studyTalkFilter = (status: string): boolean =>
-	{
+	public studyTalkFilter = (status: string): boolean => {
 		if (status.indexOf('http') >= 0) return true;
 		if (status.indexOf(':') >= 0) return true;
 		if (status.indexOf('：') >= 0) return true;
@@ -141,30 +139,23 @@ class Twbot
 		return false;
 	};
 
-	public trimStatus = (status: string): string =>
-	{
-		if (status.indexOf('。') >= 0)
-		{
+	public trimStatus = (status: string): string => {
+		if (status.indexOf('。') >= 0) {
 			status = status.substr(0, status.indexOf('。'));
 		}
-		if (status.indexOf('？') >= 0)
-		{
+		if (status.indexOf('？') >= 0) {
 			status = status.substr(0, status.indexOf('？') + 1);
 		}
-		if (status.indexOf('?') >= 0)
-		{
+		if (status.indexOf('?') >= 0) {
 			status = status.substr(0, status.indexOf('?') + 1);
 		}
-		if (status.indexOf('！') >= 0)
-		{
+		if (status.indexOf('！') >= 0) {
 			status = status.substr(0, status.indexOf('！'));
 		}
-		if (status.indexOf('!') >= 0)
-		{
+		if (status.indexOf('!') >= 0) {
 			status = status.substr(0, status.indexOf('!'));
 		}
-		if (status.indexOf('#') >= 0)
-		{
+		if (status.indexOf('#') >= 0) {
 			status = status.substr(0, status.indexOf('#'));
 		}
 		status = status.replace(/ +$/, '')
@@ -196,8 +187,7 @@ class Twbot
 		ats: string,
 		textFilter: (text: string) => string = (text: string): string => { return text },
 		canWebserver: boolean = true,
-		webPort: number = null)
-	{
+		webPort: number = null) {
 		// Init Twitter context
 		this.twitter = new Twitter({
 			consumer_key: ck,
@@ -207,7 +197,7 @@ class Twbot
 		});
 
 		// Twitterアカウンヨ情報を取得
-		this.twitter.get('users/show', { screen_name: screenName }, (showError: any, showParams: any, showResponse: any) => {
+		this.twitter.get('users/show', { screen_name: screenName },(showError: any, showParams: any, showResponse: any) => {
 			if (showError) console.log(showError);
 			console.log(showParams);
 			this.account = showParams;
@@ -241,6 +231,12 @@ class Twbot
 
 				// Start listen
 				this.webServer.listen(webPort);
+
+				// SocketIO settings
+				var io = SocketIO.listen(this.webServer);
+				io.of('/home').on('connection', function (socket: SocketIO.Socket) {
+					this.webStreamingSockets.push(socket);
+				});
 			}
 		});
 	}
@@ -252,15 +248,12 @@ class Twbot
 	  @param {string} [inReplyToStatusId] - 返信先ツイートID
 	  @return {void} 値を返しません
 	  */
-	public tweet(text: string, inReplyToStatusId: string = null): void
-	{
+	public tweet(text: string, inReplyToStatusId: string = null): void {
 		text = trim(text);
-		if (text == '')
-		{
+		if (text == '') {
 			return;
 		}
-		else
-		{
+		else {
 			this.twitter.post('statuses/update', { status: text, in_reply_to_status_id: inReplyToStatusId }, nullFunction);
 		}
 	}
@@ -272,15 +265,12 @@ class Twbot
 	  @param {string} userId - 送信先ユーザーのID
 	  @return {void} 値を返しません
 	  */
-	public createDirectMessage(text: string, userId: string): void
-	{
+	public createDirectMessage(text: string, userId: string): void {
 		text = trim(text);
-		if (text == '')
-		{
+		if (text == '') {
 			return;
 		}
-		else
-		{
+		else {
 			this.twitter.post('direct_messages/new', { text: text, user_id: userId }, nullFunction);
 		}
 	}
@@ -290,32 +280,26 @@ class Twbot
 	  @method comment
 	  @return {void} 値を返しません
 	  */
-	public comment(): void
-	{
+	public comment(): void {
 		// トレンドを取得
-		this.twitter.get('trends/place', { id: 23424856, exclude: true }, (trendsError: any, trendsParams: any, trendsResponse: any) =>
-		{
+		this.twitter.get('trends/place', { id: 23424856, exclude: true },(trendsError: any, trendsParams: any, trendsResponse: any) => {
 			if (trendsError) console.log(trendsError);
 
 			// その中からランダムに選択
 			var r = Math.floor(Math.random() * trendsParams[0].trends.length);
 			var trend = trendsParams[0].trends[r].name;
 
-			Himawari.morphologicalAnalyze(trend, (result: string[][]) =>
-			{
+			Himawari.morphologicalAnalyze(trend,(result: string[][]) => {
 				var length = 1 + Math.floor(Math.random() * 2);
-				this.himawari.comment(result[0][0], (comment: string) =>
-				{
+				this.himawari.comment(result[0][0],(comment: string) => {
 					this.tweet(comment);
 				}, length);
 			});
 		});
 	}
 
-	public command(text: string): string
-	{
-		switch (text.replace(/\s+/g, '').replace('>', ''))
-		{
+	public command(text: string): string {
+		switch (text.replace(/\s+/g, '').replace('>', '')) {
 			case 'ping':
 				return 'pong';
 				break;
@@ -338,39 +322,33 @@ class Twbot
 	  @param {any} post - 返信先の投稿オブジェクト
 	  @return {void} 値を返しません
 	  */
-	public reply(post: any): void
-	{
+	public reply(post: any): void {
 		// @sn を取り除く
 		var message = post.text.replace(/@[a-zA-Z0-9_]+\s?/, '');
 		if (message == '') return;
 
-		var sentReply = (text: string) =>
-		{
+		var sentReply = (text: string) => {
 			if (text == '' || text == null) return;
 			var statusText = '@' + post.user.screen_name + ' ' + text;
 			this.tweet(statusText, post.id_str);
 		};
 
 		// Command
-		if (message[0] == '>')
-		{
+		if (message[0] == '>') {
 			sentReply(this.command(message));
 			return;
 		}
 
 		// Calclation
 		var expression = /^[0-9\.\(\)\+\-\*\/\^\%\s]{2,}/;
-		if (message.match(expression))
-		{
+		if (message.match(expression)) {
 			sentReply(eval(message.match(expression)[0]));
 			return;
 		}
 
 		// 返信
-		this.himawari.reply(message, (himawariAnswer: string) =>
-		{
-			setTimeout(() =>
-			{
+		this.himawari.reply(message,(himawariAnswer: string) => {
+			setTimeout(() => {
 				sentReply(himawariAnswer);
 			}, 3000 + Math.floor(Math.random() * 5000));
 		});
@@ -382,38 +360,32 @@ class Twbot
 	  @param {any} dm - 返信先のダイレクトメッセージにオブジェクト
 	  @return {void} 値を返しません
 	  */
-	public replyDm(dm: any): void
-	{
+	public replyDm(dm: any): void {
 		var message = dm.text;
 
 		if (message == null) return;
 
-		var sentReply = (text: string) =>
-		{
+		var sentReply = (text: string) => {
 			if (text == '' || text == null) return;
 			this.createDirectMessage(text, dm.sender.id_str);
 		};
 
 		// Command
-		if (message[0] == '>')
-		{
+		if (message[0] == '>') {
 			sentReply(this.command(message));
 			return;
 		}
 
 		// Calclation
 		var expression = /^[0-9\(\)\+\-\*\/\^\%\s]{2,}/;
-		if (message.match(expression))
-		{
+		if (message.match(expression)) {
 			sentReply(eval(message.match(expression)[0]).toString());
 			return;
 		}
 
 		// 返信
-		this.himawari.reply(message, (himawariAnswer: string) =>
-		{
-			setTimeout(() =>
-			{
+		this.himawari.reply(message,(himawariAnswer: string) => {
+			setTimeout(() => {
 				sentReply(himawariAnswer);
 			}, 3000 + Math.floor(Math.random() * 5000));
 		});
@@ -424,28 +396,22 @@ class Twbot
 	  @method oboemashitashi
 	  @return {void} 値を返しません
 	  */
-	public oboemashitashi(): void
-	{
+	public oboemashitashi(): void {
 		if (this.recentTweet == null) return;
 
 		var text = this.recentTweet.text;
 
-		Himawari.morphologicalAnalyze(text, (result: string[][]) =>
-		{
+		Himawari.morphologicalAnalyze(text,(result: string[][]) => {
 			var keyword: string[] = null;
-			async.each(result, (i: string[], callback: () => void) =>
-			{
-				if (keyword == null && (i[2] == '固有名詞' || (i[1] == '名詞' && i[2] == '一般')))
-				{
+			async.each(result,(i: string[], callback: () => void) => {
+				if (keyword == null && (i[2] == '固有名詞' || (i[1] == '名詞' && i[2] == '一般'))) {
 					keyword = i;
 				}
 				callback();
-			}, (err: any) =>
-				{
+			},(err: any) => {
 					if (err) throw err;
 
-					if (keyword != null && keyword[8] != null && keyword[8] != '*' && keyword[8] != keyword[0])
-					{
+					if (keyword != null && keyword[8] != null && keyword[8] != '*' && keyword[8] != keyword[0]) {
 						var status = this.oboemashitashiFormat.replace('{text}', keyword[0]).replace('{yomi}', keyword[8]);
 						this.tweet(status);
 					}
@@ -458,56 +424,50 @@ class Twbot
 	  @method begin
 	  @return {void} 値を返しません
 	  */
-	public begin(tweet: (user: any, status: any) => void = null, reply: (user: any, status: any) => void = null, dm: (user: any, dm: any) => void = null)
-	{
-		var connect = () =>
-		{
-			this.twitter.stream('user', { replies: 'all' }, (stream: any) =>
-			{
-				stream.on('data', (data: any) =>
-				{
+	public begin(tweet: (user: any, status: any) => void = null, reply: (user: any, status: any) => void = null, dm: (user: any, dm: any) => void = null) {
+		var connect = () => {
+			this.twitter.stream('user', { replies: 'all' },(stream: any) => {
+				stream.on('data',(data: any) => {
 					// ダイレクトメッセージ
-					if (data.direct_message != null)
-					{
+					if (data.direct_message != null) {
 						data.direct_message.text = data.direct_message.text.replace(/&gt;/g, '>');
 						data.direct_message.text = data.direct_message.text.replace(/&lt;/g, '<');
 
 						// 自分のDMは弾く
 						if (data.direct_message.sender.screen_name == this.screenName) return;
 
-						TwitterUser.find(this.name, data.direct_message.sender.id, (twitterUser: TwitterUser) =>
-						{
-							if (twitterUser == null)
-							{
-								TwitterUser.create(this.name, data.direct_message.sender.id, data.direct_message.sender.name, (createdTwitterUser: TwitterUser) =>
-								{
+						TwitterUser.find(this.name, data.direct_message.sender.id,(twitterUser: TwitterUser) => {
+							if (twitterUser == null) {
+								TwitterUser.create(this.name, data.direct_message.sender.id, data.direct_message.sender.name,(createdTwitterUser: TwitterUser) => {
 									if (dm != null) dm(createdTwitterUser, data.direct_message);
 								});
 							}
-							else
-							{
+							else {
 								if (dm != null) dm(twitterUser, data.direct_message);
 							}
 						});
 					}
 					// ツイート
-					else if (data.text != null)
-					{
+					else if (data.text != null) {
+						
+						// Web
+						if (this.canServeWeb) {
+							this.webStreamingSockets.forEach(function (socket: SocketIO.Socket) {
+								socket.emit('tweet', data);
+							});
+						}
+
 						data.text = data.text.replace(/&gt;/g, '>');
 						data.text = data.text.replace(/&lt;/g, '<');
 						var status: string = data.text;
 
 						// 会話(リプライ)なら(ただし自分と自分宛てのリプライは除く)
-						if (data.in_reply_to_status_id_str != null && data.user.screen_name != this.screenName && !status.match(new RegExp('^@' + this.screenName)))
-						{
+						if (data.in_reply_to_status_id_str != null && data.user.screen_name != this.screenName && !status.match(new RegExp('^@' + this.screenName))) {
 							// 学習するように設定されている場合は会話を学習する
-							if (this.isStudent)
-							{
+							if (this.isStudent) {
 								// 会話を学習するためにリプライ先のツイートを取得する
-								this.twitter.get('statuses/show', { id: data.in_reply_to_status_id_str }, (err: any, obj: any, res: any) =>
-								{
-									if (err == null)
-									{
+								this.twitter.get('statuses/show', { id: data.in_reply_to_status_id_str },(err: any, obj: any, res: any) => {
+									if (err == null) {
 										// 自分が関わっている場合は弾く
 										if (obj.user.screen_name == this.screenName) return;
 										if (data.user.screen_name == this.screenName) return;
@@ -528,16 +488,13 @@ class Twbot
 							}
 						}
 						// 通常のツイートなら
-						else
-						{
+						else {
 							// 自分自信のツイートは弾く
-							if (data.user.screen_name != this.screenName)
-							{
+							if (data.user.screen_name != this.screenName) {
 								this.recentTweet = data;
 
 								// 自分に対するリプライなら
-								if (status.match(new RegExp('^@' + this.screenName)))
-								{
+								if (status.match(new RegExp('^@' + this.screenName))) {
 									// ふぁぼっとく
 									if (this.favReply)
 										this.twitter.post('favorites/create', { id: data.id_str }, nullFunction);
@@ -546,17 +503,13 @@ class Twbot
 									if (data.user.following == null && this.followWhenReceiveReply)
 										this.twitter.post('friendships/create', { user_id: data.user.id_str, follow: false }, nullFunction);
 
-									TwitterUser.find(this.name, data.user.id, (twitterUser: TwitterUser) =>
-									{
-										if (twitterUser == null)
-										{
-											TwitterUser.create(this.name, data.user.id, data.user.name, (createdTwitterUser: TwitterUser) =>
-											{
+									TwitterUser.find(this.name, data.user.id,(twitterUser: TwitterUser) => {
+										if (twitterUser == null) {
+											TwitterUser.create(this.name, data.user.id, data.user.name,(createdTwitterUser: TwitterUser) => {
 												if (reply != null) reply(createdTwitterUser, data);
 											});
 										}
-										else
-										{
+										else {
 											if (reply != null) reply(twitterUser, data);
 										}
 									});
@@ -564,20 +517,17 @@ class Twbot
 								}
 
 								// エゴふぁぼRT
-								if (status.indexOf(this.name) >= 0 && this.canEgoFavRt)
-								{
+								if (status.indexOf(this.name) >= 0 && this.canEgoFavRt) {
 									this.twitter.post('favorites/create', { id: data.id_str }, nullFunction);
 									this.twitter.post('statuses/retweet/' + data.id_str, {}, nullFunction);
 								}
 
-								TwitterUser.find(this.name, data.user.id, (twitterUser: TwitterUser) =>
-								{
+								TwitterUser.find(this.name, data.user.id,(twitterUser: TwitterUser) => {
 									if (tweet != null) tweet(twitterUser, data);
 								});
 
 								// 学習
-								if (this.isStudent)
-								{
+								if (this.isStudent) {
 									if (status.indexOf('@') >= 0) return;
 									if (this.studyFilter(status)) return;
 
@@ -589,8 +539,7 @@ class Twbot
 					}
 				});
 
-				stream.on('error', (error: any) =>
-				{
+				stream.on('error',(error: any) => {
 					console.log(error);
 					throw error;
 				});
@@ -601,8 +550,7 @@ class Twbot
 
 		var st: any = connect();
 
-		setInterval(() =>
-		{
+		setInterval(() => {
 			st.destroy;
 			st = connect();
 		}, 86400000); // 24時間
