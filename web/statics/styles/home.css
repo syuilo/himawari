@@ -41,9 +41,9 @@ main {
 	}
 		main > header > #icon {
 			float: left;
-			width: 64px;
-			height: 64px;
-			margin: 8px;
+			width: 56px;
+			height: 56px;
+			margin: 12px 0 12px 18px;
 			border-radius: 8px;
 		}
 		main > header > h1 {
@@ -51,6 +51,7 @@ main {
 			margin: 0;
 			padding: 0 16px;
 			line-height: 80px;
+			font-size: 1.8em;
 		}
 		main > header > #twitter-screen-name {
 			float: left;
@@ -91,3 +92,17 @@ main {
 		main > #timeline > .tweets {
 			list-style: none;
 		}
+			main > #timeline > .tweets > .tweet {
+				margin: 0;
+				padding: 8px;
+			}
+				main > #timeline > .tweets > .tweet > article {
+					
+				}
+					main > #timeline > .tweets > .tweet > article > .icon {
+						width: 64px;
+					}
+					main > #timeline > .tweets > .tweet > article > .main {
+						box-sizing: border-box;
+						width: calc(100% - 64px);
+					}
