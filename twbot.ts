@@ -214,13 +214,6 @@ class Twbot {
 			// Webserver setteing
 			if (canWebserver) {
 				var app = express();
-				var webServer = require('http').Server(app);
-
-				// SocketIO settings
-				var io = SocketIO(webServer);
-				io.of('/home').on('connection', function (socket: SocketIO.Socket) {
-					bot.webStreamingSockets.push(socket);
-				});
 
 				// express setteings
 				app.set('view engine', 'jade');
@@ -236,7 +229,13 @@ class Twbot {
 				});
 
 				// Start listen
-				app.listen(webPort);
+				var server = app.listen(webPort);
+
+				// SocketIO settings
+				var io = SocketIO.listen(server);
+				io.of('/home').on('connection', function (socket: SocketIO.Socket) {
+					bot.webStreamingSockets.push(socket);
+				});
 			}
 		});
 	}
