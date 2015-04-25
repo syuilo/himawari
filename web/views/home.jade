@@ -13,8 +13,8 @@ html(lang='ja', dir='ltr', itemscope, itemtype='https://schema.org/WebPage')
 		title= bot.name
 	body
 		main
-			header(style= 'border-left: solid 10px #' + bot.account.profile_link_color + ';')
-				a#account(href= 'https://twitter.com/' + bot.account.screen_name)
+			header
+				a#account(href= 'https://twitter.com/' + bot.account.screen_name, style= 'border-left: solid 10px #' + bot.account.profile_link_color + ';')
 					img#icon(src= bot.account.profile_image_url_https.replace('_normal', ''), alt='icon')
 					h1= bot.name
 					span#twitter-screen-name= '@' + bot.account.screen_name

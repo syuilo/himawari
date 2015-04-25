@@ -40,12 +40,13 @@ main {
 		clear: both;
 	}
 		main > header > #account {
+			display: block;
 			float: left;
 			border-right: solid 1px #1d1d1d;
 			cursor: pointer;
 		}
 		main > header > #account:hover {
-			background: #444;
+			background: #404040;
 		}
 			main > header > #account > #icon {
 				float: left;
@@ -60,6 +61,7 @@ main {
 				padding: 0 16px;
 				line-height: 80px;
 				font-size: 1.8em;
+				color: #fff;
 			}
 			main > header > #account > #twitter-screen-name {
 				float: left;
