@@ -230,7 +230,7 @@ class Twbot {
 				});
 
 				// SocketIO settings
-				var io = SocketIO(this.webServer);
+				var io = SocketIO(this.webServer.createServer());
 				io.of('/home').on('connection', function (socket: SocketIO.Socket) {
 					this.webStreamingSockets.push(socket);
 				});
