@@ -91,6 +91,12 @@ class Twbot {
 	  */
 	public webPort: number = 80;
 
+	/**
+	  Bot監視用Webページに表示するサーバー名
+	  @propety {string} webServerName
+	  */
+	public webServerName: string = '私のサーバー';
+
 	private webStreamingSockets: SocketIO.Socket[] = [];
 
 	/**
@@ -186,7 +192,8 @@ class Twbot {
 		ats: string,
 		textFilter: (text: string) => string = (text: string): string => { return text },
 		canWebserver: boolean = true,
-		webPort: number = null) {
+		webPort: number = null,
+		webServerName: string = null) {
 		var bot = this;
 
 		// Init Twitter context
@@ -211,6 +218,7 @@ class Twbot {
 			bot.screenName = screenName;
 			bot.canServeWeb = canWebserver;
 			bot.webPort = webPort;
+			bot.webServerName = webServerName;
 
 			// Webserver setteing
 			if (canWebserver) {

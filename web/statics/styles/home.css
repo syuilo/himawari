@@ -52,3 +52,19 @@ main {
 			padding: 0 16px;
 			line-height: 80px;
 		}
+		main > header > #server-name {
+			float: right;
+			padding: 0 16px;
+			line-height: 80px;
+		}
+		main > header > #server-name:before {
+			content: "\f233";
+			font-family: FontAwesome;
+			margin-right: 8px;
+		}
+	main > #timeline {
+		
+	}
+		main > #timeline > .tweets {
+			list-style: none;
+		}
