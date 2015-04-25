@@ -107,7 +107,8 @@ main {
 			font-size: 1.5em;
 		}
 	main > #timeline {
-		
+		box-sizing: border-box;
+		padding: 8px;
 	}
 		main > #timeline > .tweets {
 			margin: 0;
@@ -117,6 +118,9 @@ main {
 			main > #timeline > .tweets > .tweet {
 				margin: 0;
 				padding: 12px 18px;
+			}
+			main > #timeline > .tweets > .tweet:hover {
+				background: rgba(255, 255, 255, 0.1);
 			}
 				main > #timeline > .tweets > .tweet > article {
 					
@@ -144,6 +148,6 @@ main {
 								font-weight: bold;
 							}
 							main > #timeline > .tweets > .tweet > article > .main > header > .screen-name {
-								margin-left: 8px;
+								margin-left: 16px;
 								color: rgba(255, 255, 255, 0.5);
 							}
