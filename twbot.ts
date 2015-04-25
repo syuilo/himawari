@@ -210,6 +210,7 @@ class Twbot
 			this.webServer.use(express.static(__dirname + '/web/statics'));
 
 			this.webServer.get('/', function (req: express.Request, res: express.Response) {
+				console.log('kyoppie');
 				res.render('home', this);
 			});
 
