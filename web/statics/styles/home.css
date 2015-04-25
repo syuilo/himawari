@@ -31,6 +31,7 @@ main {
 	
 }
 	main > header {
+		height: 80px;
 		background: #222;
 	}
 	main > header:after {
@@ -40,11 +41,14 @@ main {
 	}
 		main > header > #icon {
 			float: left;
-			width: 128px;
-			height: 128px;
+			width: 64px;
+			height: 64px;
 			margin: 8px;
 			border-radius: 8px;
 		}
 		main > header > h1 {
 			float: left;
+			margin: 0;
+			padding: 0 16px;
+			line-height: 80px;
 		}
