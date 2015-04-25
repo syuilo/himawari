@@ -41,6 +41,7 @@ main {
 	}
 		main > header > #account {
 			float: left;
+			border-right: solid 1px #1d1d1d;
 			cursor: pointer;
 		}
 		main > header > #account:hover {
@@ -66,7 +67,6 @@ main {
 				padding: 0 16px 0 0;
 				line-height: 80px;
 				color: rgba(255, 255, 255, 0.5);
-				border-right: solid 1px #1d1d1d;
 			}
 		main > header > #bot-status {
 			float: left;
