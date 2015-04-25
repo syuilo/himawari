@@ -48,6 +48,9 @@ main {
 		main > header > #account:hover {
 			background: #404040;
 		}
+			main > header > #account > * {
+				cursor: pointer;
+			}
 			main > header > #account > #icon {
 				float: left;
 				width: 56px;
