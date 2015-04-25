@@ -103,6 +103,8 @@ main {
 		
 	}
 		main > #timeline > .tweets {
+			margin: 0;
+			padding: 0;
 			list-style: none;
 		}
 			main > #timeline > .tweets > .tweet {
@@ -124,5 +126,16 @@ main {
 					main > #timeline > .tweets > .tweet > article > .main {
 						box-sizing: border-box;
 						float: left;
+						padding: 4px 16px;
 						width: calc(100% - 64px);
 					}
+						main > #timeline > .tweets > .tweet > article > .main > header {
+							
+						}
+							main > #timeline > .tweets > .tweet > article > .main > header > .name {
+								font-weight: bold;
+							}
+							main > #timeline > .tweets > .tweet > article > .main > header > .screen-name {
+								margin-left: 8px;
+								color: rgba(255, 255, 255, 0.5);
+							}
