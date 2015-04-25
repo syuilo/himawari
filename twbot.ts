@@ -188,8 +188,10 @@ class Twbot {
 		textFilter: (text: string) => string = (text: string): string => { return text },
 		canWebserver: boolean = true,
 		webPort: number = null) {
+		var bot = this;
+
 		// Init Twitter context
-		this.twitter = new Twitter({
+		bot.twitter = new Twitter({
 			consumer_key: ck,
 			consumer_secret: cs,
 			access_token_key: at,
@@ -197,32 +199,30 @@ class Twbot {
 		});
 
 		// Twitterアカウンヨ情報を取得
-		this.twitter.get('users/show', { screen_name: screenName },(showError: any, showParams: any, showResponse: any) => {
+		bot.twitter.get('users/show', { screen_name: screenName },(showError: any, showParams: any, showResponse: any) => {
 			if (showError) console.log(showError);
 			console.log(showParams);
-			this.account = showParams;
+			bot.account = showParams;
 
 			// Init himawari
-			this.himawari = new Himawari();
-			this.himawari.textFilter = textFilter;
+			bot.himawari = new Himawari();
+			bot.himawari.textFilter = textFilter;
 
-			this.name = name;
-			this.screenName = screenName;
-			this.canServeWeb = canWebserver;
-			this.webPort = webPort;
+			bot.name = name;
+			bot.screenName = screenName;
+			bot.canServeWeb = canWebserver;
+			bot.webPort = webPort;
 
 			// Webserver setteing
 			if (canWebserver) {
-				this.webServer = express();
+				bot.webServer = express();
 
-				this.webServer.set('view engine', 'jade');
-				this.webServer.set('views', __dirname + '/web/views');
-				this.webServer.use(express.static(__dirname + '/web/statics'));
-
-				var bot = this;
+				bot.webServer.set('view engine', 'jade');
+				bot.webServer.set('views', __dirname + '/web/views');
+				bot.webServer.use(express.static(__dirname + '/web/statics'));
 
 				// Home routing
-				this.webServer.get('/', function (req: express.Request, res: express.Response) {
+				bot.webServer.get('/', function (req: express.Request, res: express.Response) {
 					console.log('kyoppie');
 					res.render('home', {
 						bot: bot
@@ -230,13 +230,13 @@ class Twbot {
 				});
 
 				// SocketIO settings
-				var io = SocketIO(this.webServer.createServer());
+				var io = SocketIO(bot.webServer.createServer());
 				io.of('/home').on('connection', function (socket: SocketIO.Socket) {
-					this.webStreamingSockets.push(socket);
+					bot.webStreamingSockets.push(socket);
 				});
 
 				// Start listen
-				this.webServer.listen(webPort);
+				bot.webServer.listen(webPort);
 			}
 		});
 	}
