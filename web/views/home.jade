@@ -8,6 +8,6 @@ html(lang='ja', dir='ltr', itemscope, itemtype='https://schema.org/WebPage')
 	body
 		main
 			header
-				img#icon(src= bot.account.profile_image_url_https, alt='icon')
+				img#icon(src= bot.account.profile_image_url_https.replace('_normal', ''), alt='icon')
 				h1= bot.name
 		p test
