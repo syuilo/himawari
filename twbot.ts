@@ -229,14 +229,14 @@ class Twbot {
 					});
 				});
 
-				// Start listen
-				this.webServer.listen(webPort);
-
 				// SocketIO settings
-				var io = SocketIO.listen(this.webServer);
+				var io = SocketIO(this.webServer);
 				io.of('/home').on('connection', function (socket: SocketIO.Socket) {
 					this.webStreamingSockets.push(socket);
 				});
+
+				// Start listen
+				this.webServer.listen(webPort);
 			}
 		});
 	}
