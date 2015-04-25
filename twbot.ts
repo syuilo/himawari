@@ -198,6 +198,7 @@ class Twbot
 		canWebserver: boolean = true,
 		webPort: number = null)
 	{
+		// Init Twitter context
 		this.twitter = new Twitter({
 			consumer_key: ck,
 			consumer_secret: cs,
@@ -206,7 +207,7 @@ class Twbot
 		});
 
 		// Twitterアカウンヨ情報を取得
-		this.twitter.get('account/show', { }, (showError: any, showParams: any, showResponse: any) => {
+		this.twitter.get('users/show', { screen_name: screenName }, (showError: any, showParams: any, showResponse: any) => {
 			if (showError) console.log(showError);
 			console.log(showParams);
 			this.account = showParams;
