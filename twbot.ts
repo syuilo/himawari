@@ -206,8 +206,8 @@ class Twbot
 			this.webServer = express();
 
 			this.webServer.set('view engine', 'jade');
-			this.webServer.set('views', __dirname + '/views');
-			this.webServer.use(express.static('public'));
+			this.webServer.set('views', __dirname + '/web/views');
+			this.webServer.use(express.static(__dirname + '/web/statics'));
 
 			this.webServer.get('/', function (req: express.Request, res: express.Response) {
 				res.render('home', this);
