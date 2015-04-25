@@ -33,6 +33,12 @@ class Twbot
 	public recentTweet: any = null;
 
 	/**
+	  botのTwitterアカウンヨデータ
+	  @propety {any} account
+	  */
+	public account: any;
+
+	/**
 	  botの名前
 	  @propety {string} name
 	  */
@@ -192,40 +198,49 @@ class Twbot
 		canWebserver: boolean = true,
 		webPort: number = null)
 	{
-		// Init himawari
-		this.himawari = new Himawari();
-		this.himawari.textFilter = textFilter;
-
-		this.name = name;
-		this.screenName = screenName;
-		this.canServeWeb = canWebserver;
-		this.webPort = webPort;
-
-		// Webserver setteing
-		if (canWebserver) {
-			this.webServer = express();
-
-			this.webServer.set('view engine', 'jade');
-			this.webServer.set('views', __dirname + '/web/views');
-			this.webServer.use(express.static(__dirname + '/web/statics'));
-
-			var bot = this;
-
-			this.webServer.get('/', function (req: express.Request, res: express.Response) {
-				console.log('kyoppie');
-				res.render('home', {
-					bot: bot
-				});
-			});
-
-			this.webServer.listen(webPort);
-		}
-
 		this.twitter = new Twitter({
 			consumer_key: ck,
 			consumer_secret: cs,
 			access_token_key: at,
 			access_token_secret: ats
+		});
+
+		// Twitterアカウンヨ情報を取得
+		this.twitter.get('account/show', { }, (showError: any, showParams: any, showResponse: any) => {
+			if (showError) console.log(showError);
+			console.log(showParams);
+			this.account = showParams;
+
+			// Init himawari
+			this.himawari = new Himawari();
+			this.himawari.textFilter = textFilter;
+
+			this.name = name;
+			this.screenName = screenName;
+			this.canServeWeb = canWebserver;
+			this.webPort = webPort;
+
+			// Webserver setteing
+			if (canWebserver) {
+				this.webServer = express();
+
+				this.webServer.set('view engine', 'jade');
+				this.webServer.set('views', __dirname + '/web/views');
+				this.webServer.use(express.static(__dirname + '/web/statics'));
+
+				var bot = this;
+
+				// Home routing
+				this.webServer.get('/', function (req: express.Request, res: express.Response) {
+					console.log('kyoppie');
+					res.render('home', {
+						bot: bot
+					});
+				});
+
+				// Start listen
+				this.webServer.listen(webPort);
+			}
 		});
 	}
 
