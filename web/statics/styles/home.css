@@ -116,7 +116,7 @@ main {
 		}
 			main > #timeline > .tweets > .tweet {
 				margin: 0;
-				padding: 8px;
+				padding: 12px 18px;
 			}
 				main > #timeline > .tweets > .tweet > article {
 					
@@ -128,7 +128,8 @@ main {
 				}
 					main > #timeline > .tweets > .tweet > article > .icon {
 						float: left;
-						width: 64px;
+						width: 52px;
+						border-radius: 8px;
 					}
 					main > #timeline > .tweets > .tweet > article > .main {
 						box-sizing: border-box;
