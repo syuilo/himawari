@@ -209,10 +209,12 @@ class Twbot
 			this.webServer.set('views', __dirname + '/web/views');
 			this.webServer.use(express.static(__dirname + '/web/statics'));
 
+			var bot = this;
+
 			this.webServer.get('/', function (req: express.Request, res: express.Response) {
 				console.log('kyoppie');
 				res.render('home', {
-					bot: this
+					bot: bot
 				});
 			});
 
