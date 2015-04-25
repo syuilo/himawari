@@ -55,7 +55,7 @@ main {
 		main > header > #twitter-screen-name {
 			float: left;
 			margin: 0;
-			padding: 0 16px;
+			padding: 0 16px 0 0;
 			line-height: 80px;
 			color: rgba(255, 255, 255, 0.5);
 		}
@@ -69,9 +69,9 @@ main {
 		main > header > #bot-status:before {
 			content: "\f111";
 			font-family: FontAwesome;
-			margin-right: 8px;
+			margin-right: 4px;
 			vertical-align: bottom;
-			font-size: 1.5em;
+			font-size: 1.2em;
 		}
 		main > header > #server-name {
 			float: right;
