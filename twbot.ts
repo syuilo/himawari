@@ -90,8 +90,6 @@ class Twbot {
 	  */
 	public webPort: number = 80;
 
-	private webServer: express.Express;
-
 	private webStreamingSockets: SocketIO.Socket[] = [];
 
 	/**
@@ -215,14 +213,15 @@ class Twbot {
 
 			// Webserver setteing
 			if (canWebserver) {
-				bot.webServer = express();
+				var app = express();
+				var webServer = require('http').Server(app);
 
-				bot.webServer.set('view engine', 'jade');
-				bot.webServer.set('views', __dirname + '/web/views');
-				bot.webServer.use(express.static(__dirname + '/web/statics'));
+				app.set('view engine', 'jade');
+				app.set('views', __dirname + '/web/views');
+				app.use(express.static(__dirname + '/web/statics'));
 
 				// Home routing
-				bot.webServer.get('/', function (req: express.Request, res: express.Response) {
+				app.get('/', function (req: express.Request, res: express.Response) {
 					console.log('kyoppie');
 					res.render('home', {
 						bot: bot
@@ -230,13 +229,13 @@ class Twbot {
 				});
 
 				// SocketIO settings
-				var io = SocketIO(bot.webServer.createServer());
+				var io = SocketIO(webServer);
 				io.of('/home').on('connection', function (socket: SocketIO.Socket) {
 					bot.webStreamingSockets.push(socket);
 				});
 
 				// Start listen
-				bot.webServer.listen(webPort);
+				app.listen(webPort);
 			}
 		});
 	}
