@@ -39,28 +39,35 @@ main {
 		display: block;
 		clear: both;
 	}
-		main > header > #icon {
+		main > header > #account {
 			float: left;
-			width: 56px;
-			height: 56px;
-			margin: 12px 0 12px 18px;
-			border-radius: 8px;
+			cursor: pointer;
 		}
-		main > header > h1 {
-			float: left;
-			margin: 0;
-			padding: 0 16px;
-			line-height: 80px;
-			font-size: 1.8em;
+		main > header > #account:hover {
+			background: #444;
 		}
-		main > header > #twitter-screen-name {
-			float: left;
-			margin: 0;
-			padding: 0 16px 0 0;
-			line-height: 80px;
-			color: rgba(255, 255, 255, 0.5);
-			border-right: solid 1px #1d1d1d;
-		}
+			main > header > #account > #icon {
+				float: left;
+				width: 56px;
+				height: 56px;
+				margin: 12px 0 12px 18px;
+				border-radius: 8px;
+			}
+			main > header > #account > h1 {
+				float: left;
+				margin: 0;
+				padding: 0 16px;
+				line-height: 80px;
+				font-size: 1.8em;
+			}
+			main > header > #account > #twitter-screen-name {
+				float: left;
+				margin: 0;
+				padding: 0 16px 0 0;
+				line-height: 80px;
+				color: rgba(255, 255, 255, 0.5);
+				border-right: solid 1px #1d1d1d;
+			}
 		main > header > #bot-status {
 			float: left;
 			margin: 0;
