@@ -52,15 +52,38 @@ main {
 			padding: 0 16px;
 			line-height: 80px;
 		}
+		main > header > #twitter-screen-name {
+			float: left;
+			margin: 0;
+			padding: 0 16px;
+			line-height: 80px;
+			color: rgba(255, 255, 255, 0.5);
+		}
+		main > header > #bot-status {
+			float: left;
+			margin: 0;
+			padding: 0 16px;
+			line-height: 80px;
+			color: #7e0;
+		}
+		main > header > #bot-status:before {
+			content: "\f111";
+			font-family: FontAwesome;
+			margin-right: 8px;
+			vertical-align: bottom;
+			font-size: 1.5em;
+		}
 		main > header > #server-name {
 			float: right;
-			padding: 0 16px;
+			padding: 0 32px;
 			line-height: 80px;
 		}
 		main > header > #server-name:before {
 			content: "\f233";
 			font-family: FontAwesome;
 			margin-right: 8px;
+			vertical-align: bottom;
+			font-size: 1.5em;
 		}
 	main > #timeline {
 		
