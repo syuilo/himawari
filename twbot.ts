@@ -7,6 +7,8 @@
 
 var Twitter = require('twitter');
 import async = require('async');
+import express = require('express');
+import socketio = require('socket.io');
 
 import Himawari = require('./himawari');
 import TwitterUser = require('./models/twitterUser');
@@ -74,15 +76,17 @@ class Twbot
 
 	/**
 	  Bot監視用Webページを利用するか
-	  @propety {boolean} canServeWebPlayground
+	  @propety {boolean} canServeWeb
 	  */
-	public canServeWebPlayground: boolean = true;
+	public canServeWeb: boolean = true;
 
 	/**
 	  Bot監視用Webページの待ち受けポート
-	  @propety {number} webPlaygroundPort
+	  @propety {number} webPort
 	  */
-	public webPlaygroundPort: number = 80;
+	public webPort: number = 80;
+
+	private webServer: express.Express;
 
 	/**
 	  学習するソースのフィルタ (true = 学習しない, false = 学習する)
@@ -177,13 +181,40 @@ class Twbot
 	  @param {string} ats - アクセストークンシークレット
 	  @param {(text: string) => string} [textFilter] - 発言のフィルター
 	  */
-	constructor(name: string, screenName: string, ck: string, cs: string, at: string, ats: string, textFilter: (text: string) => string = (text: string): string => { return text })
+	constructor(
+		name: string,
+		screenName: string,
+		ck: string,
+		cs: string,
+		at: string,
+		ats: string,
+		textFilter: (text: string) => string = (text: string): string => { return text },
+		canWebserver: boolean = true,
+		webPort: number = null)
 	{
+		// Init himawari
 		this.himawari = new Himawari();
 		this.himawari.textFilter = textFilter;
 
 		this.name = name;
 		this.screenName = screenName;
+		this.canServeWeb = canWebserver;
+		this.webPort = webPort;
+
+		// Webserver setteing
+		if (canWebserver) {
+			this.webServer = express();
+
+			this.webServer.set('view engine', 'jade');
+			this.webServer.set('views', __dirname + '/views');
+			this.webServer.use(express.static('public'));
+
+			this.webServer.get('/', function (req: express.Request, res: express.Response) {
+				res.render('home', this);
+			});
+
+			this.webServer.listen(webPort);
+		}
 
 		this.twitter = new Twitter({
 			consumer_key: ck,
