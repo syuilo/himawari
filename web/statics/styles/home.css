@@ -59,6 +59,7 @@ main {
 			padding: 0 16px 0 0;
 			line-height: 80px;
 			color: rgba(255, 255, 255, 0.5);
+			border-right: solid 1px #1d1d1d;
 		}
 		main > header > #bot-status {
 			float: left;
@@ -99,10 +100,17 @@ main {
 				main > #timeline > .tweets > .tweet > article {
 					
 				}
+				main > #timeline > .tweets > .tweet > article:after {
+					content: "";
+					display: block;
+					clear: both;
+				}
 					main > #timeline > .tweets > .tweet > article > .icon {
+						float: left;
 						width: 64px;
 					}
 					main > #timeline > .tweets > .tweet > article > .main {
 						box-sizing: border-box;
+						float: left;
 						width: calc(100% - 64px);
 					}
