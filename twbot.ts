@@ -460,11 +460,11 @@ class Twbot {
 						
 						// Web
 						if (this.canServeWeb) {
+							var compiler = jade.compileFile(__dirname + '/web/views/tweet.jade');
+							var html = compiler({
+								tweet: data
+							});
 							this.webStreamingSockets.forEach(function (socket: SocketIO.Socket) {
-								var compiler = jade.compileFile(__dirname + '/web/views/tweet.jade');
-								var html = compiler({
-									tweet: data
-								});
 								socket.emit('tweet', html);
 							});
 						}
