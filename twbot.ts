@@ -9,6 +9,7 @@ var Twitter = require('twitter');
 import async = require('async');
 import express = require('express');
 import SocketIO = require('socket.io');
+import jade = require('jade');
 
 import Himawari = require('./himawari');
 import TwitterUser = require('./models/twitterUser');
@@ -452,7 +453,11 @@ class Twbot {
 						// Web
 						if (this.canServeWeb) {
 							this.webStreamingSockets.forEach(function (socket: SocketIO.Socket) {
-								socket.emit('tweet', data);
+								var compiler = jade.compileFile(__dirname + '/web/views/tweet.jade');
+								var html = compiler({
+									tweet: data
+								});
+								socket.emit('tweet', html);
 							});
 						}
 

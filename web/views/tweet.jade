@@ -1,0 +1,8 @@
+li.tweet
+	article
+		img.icon(src= tweet.user.profile_image_url_https, alt='icon')
+		div.main
+			header
+				span.name= tweet.user.name
+				span.screen-name= tweet.user.screenName
+			div.text= tweet.text
