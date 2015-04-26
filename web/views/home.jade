@@ -21,4 +21,16 @@ html(lang='ja', dir='ltr', itemscope, itemtype='https://schema.org/WebPage')
 				span#bot-status 稼働中
 				span#server-name= bot.webServerName
 			div#timeline
+				h2
+					i.fa.fa-comments
+					| Timeline
 				ol.tweets
+			div#repl
+				h2
+					i.fa.fa-terminal
+					b= bot.name
+					| と遊ぶ
+				ol.messages
+				form
+					input(type='text', name='message')
+					input(type='submit', value='Send')

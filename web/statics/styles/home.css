@@ -30,6 +30,11 @@ html {
 main {
 	
 }
+main:after {
+	content: "";
+	display: block;
+	clear: both;
+}
 	main > header {
 		height: 80px;
 		background: #222;
@@ -108,7 +113,9 @@ main {
 		}
 	main > #timeline {
 		box-sizing: border-box;
+		float: left;
 		padding: 8px;
+		width: 70%;
 	}
 		main > #timeline > .tweets {
 			margin: 0;
@@ -151,3 +158,8 @@ main {
 								margin-left: 16px;
 								color: rgba(255, 255, 255, 0.5);
 							}
+	main > #repl {
+		box-sizing: border-box;
+		float: left;
+		width: 30%;
+	}
