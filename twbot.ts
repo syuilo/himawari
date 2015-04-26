@@ -472,7 +472,7 @@ class Twbot {
 							var html = compiler({
 								tweet: data
 							});
-							this.webStreamingSockets.forEach(function (socket: SocketIO.Socket) {
+							this.webStreamingSockets.forEach((socket: SocketIO.Socket) => {
 								socket.emit('tweet', html);
 							});
 						}
