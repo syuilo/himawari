@@ -104,26 +104,30 @@ class Twbot {
 	  @propety {(status: string): boolean} studyFilter
 	  */
 	public studyFilter = (status: string): boolean => {
-		if (status.indexOf('http') >= 0) return true;
-		if (status.indexOf(':') >= 0) return true;
-		if (status.indexOf('：') >= 0) return true;
-		if (status.indexOf('"') >= 0) return true;
-		if (status.indexOf('「') >= 0) return true;
-		if (status.indexOf('」') >= 0) return true;
-		if (status.indexOf('(') >= 0) return true;
-		if (status.indexOf(')') >= 0) return true;
-		if (status.indexOf('（') >= 0) return true;
-		if (status.indexOf('）') >= 0) return true;
-		if (status.indexOf('[') >= 0) return true;
-		if (status.indexOf(']') >= 0) return true;
-		if (status.indexOf('<') >= 0) return true;
-		if (status.indexOf('>') >= 0) return true;
-		if (status.indexOf('&gt;') >= 0) return true;
-		if (status.indexOf('&lt;') >= 0) return true;
-		if (status.indexOf('【') >= 0) return true;
-		if (status.indexOf('】') >= 0) return true;
-		if (status.indexOf('\n') >= 0) return true;
-		if (status.indexOf('RT') >= 0) return true;
+		[
+			'http',
+			':',
+			'：',
+			'"',
+			'「',
+			'」',
+			'(',
+			')',
+			'（',
+			'）',
+			'[',
+			']',
+			'<',
+			'>',
+			'&gt;',
+			'&lt;',
+			'【',
+			'】',
+			'\n',
+			'RT'
+		].forEach((word) => {
+			if (status.indexOf(word) >= 0) return true;
+		});
 		return false;
 	};
 
@@ -132,15 +136,19 @@ class Twbot {
 	  @propety {(status: string): boolean} studyFilter
 	  */
 	public studyTalkFilter = (status: string): boolean => {
-		if (status.indexOf('http') >= 0) return true;
-		if (status.indexOf(':') >= 0) return true;
-		if (status.indexOf('：') >= 0) return true;
-		if (status.indexOf('<') >= 0) return true;
-		if (status.indexOf('>') >= 0) return true;
-		if (status.indexOf('&gt;') >= 0) return true;
-		if (status.indexOf('&lt;') >= 0) return true;
-		if (status.indexOf('\n') >= 0) return true;
-		if (status.indexOf('RT') >= 0) return true;
+		[
+			'http',
+			':',
+			'：',
+			'<',
+			'>',
+			'&gt;',
+			'&lt;',
+			'\n',
+			'RT'
+		].forEach((word) => {
+			if (status.indexOf(word) >= 0) return true;
+		});
 		return false;
 	};
 
