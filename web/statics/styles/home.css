@@ -115,8 +115,16 @@ main:after {
 		box-sizing: border-box;
 		float: left;
 		padding: 8px;
-		width: 70%;
+		width: 65%;
 	}
+		main > #timeline > h2 {
+			margin: 0;
+			padding: 8px 16px;
+			font-size: 1em;
+		}
+			main > #timeline > h2 > i {
+				margin-right: 8px;
+			}
 		main > #timeline > .tweets {
 			margin: 0;
 			padding: 0;
@@ -161,5 +169,13 @@ main:after {
 	main > #repl {
 		box-sizing: border-box;
 		float: left;
-		width: 30%;
+		width: 35%;
 	}
+		main > #repl > h2 {
+			margin: 0;
+			padding: 8px 16px;
+			font-size: 1em;
+		}
+			main > #repl > h2 > i {
+				margin-right: 8px;
+			}
